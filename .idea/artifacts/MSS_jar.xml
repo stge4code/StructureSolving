@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact name="MSS:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/MSS_jar</output-path>
+    <root id="root">
+      <element id="archive" name="MSS.jar">
+        <element id="module-output" name="MSS" />
+      </element>
+    </root>
+  </artifact>
+</component>
