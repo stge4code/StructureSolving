@@ -1,20 +1,21 @@
 package Modules;
 
+import CrystTools.Atom;
 import CrystTools.Fragment;
 import CrystTools.ReciprocalItem;
 import CrystTools.UnitCell;
 import MathTools.FastMath;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static Utilities.ObjectsUtilities.generateAtomNum;
 
 /**
  * Created by Developer on 10.09.2015.
@@ -336,5 +337,29 @@ public class DiffractionData {
 
     public ArrayList<ReciprocalItem> getHKL() {
         return HKL;
+    }
+    public void PrintHKL(String diffractionDataFilenameExport){
+        File fileOUT = new File(diffractionDataFilenameExport);
+        try {
+            if (!fileOUT.exists()) {
+                fileOUT.createNewFile();
+            }
+            PrintWriter out = new PrintWriter(fileOUT.getAbsoluteFile());
+            try {
+                for (ReciprocalItem itemHKL : this.HKL) {
+                        out.printf("% 4d% 4d% 4d% 8g% 8g% 4d\n",
+                                itemHKL.h,
+                                itemHKL.k,
+                                itemHKL.l,
+                                itemHKL.Fsq,
+                                itemHKL.sigmaFsq,
+                                (int) itemHKL.batchNumber);
+                    }
+            } finally {
+                out.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

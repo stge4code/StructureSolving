@@ -33,6 +33,7 @@ public class MSS {
                 CELL,
                 FULLPATH + NAME + ".HKL",
                 FULLPATH + NAME + ".HKLS");
+        HKL.PrintHKL(FULLPATH + "_" + NAME + ".HKL");
 
         PenaltyFunction PSI = new PenaltyFunction(
                 FULLPATH + NAME + ".PNLT");

@@ -15,9 +15,9 @@ import java.util.List;
  * Created by Developer on 11.09.2015.
  */
 public class Energy {
-    private DiffractionData HKL;
-    private UnitCell CELL;
-    private Symmetry SYM;
+    private final DiffractionData HKL;
+    private final UnitCell CELL;
+    private final Symmetry SYM;
     public String OPT;
     public double E;
     public double Exray;

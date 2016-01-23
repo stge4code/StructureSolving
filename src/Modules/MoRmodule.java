@@ -66,6 +66,8 @@ public class MoRmodule {
         private String SAVE_BEST_RESULT = "N";
         private int PRINT_FRAGMENT = 0;
         private String Eopt = "";
+        private double wExray = -1.0;
+        private double wEcore = -1.0;
 
         //----------------------------------------------------------------------------------------------------------------------
         public RavinessSettings(String ravinessDataFilename) {
@@ -118,6 +120,20 @@ public class MoRmodule {
                                         break;
                                     case "E":
                                         this.Eopt = allMatches.get(1);
+                                        break;
+                                    case "wExray":
+                                        if(allMatches.get(1).contains("A")){
+                                            this.wExray = -1;
+                                        } else {
+                                            this.wExray = Double.valueOf(allMatches.get(1)).doubleValue();
+                                        }
+                                        break;
+                                    case "wEcore":
+                                        if(allMatches.get(1).contains("A")){
+                                            this.wEcore = -1;
+                                        } else {
+                                            this.wEcore = Double.valueOf(allMatches.get(1)).doubleValue();
+                                        }
                                         break;
                                     case "Delta1":
                                         this.Delta1 = Double.valueOf(allMatches.get(1)).doubleValue();
@@ -620,6 +636,7 @@ public class MoRmodule {
         FragmentData FRAG_I = (FragmentData) deepClone(FRAG);
         FragmentData FRAG_II = (FragmentData) deepClone(FRAG);
         //FragmentData FRAG_III = (FragmentData) deepClone(FRAG);
+
         for (int i = 0; i < MORSETTINGS.N; i++) {
 
             //FRAG_I.fragsParametersAdjustment();
@@ -635,12 +652,13 @@ public class MoRmodule {
             }
 
             gradientDec(FRAG_I, E, Delta);
+            E.calcEnergy(FRAG_I);
             if (this.MORSETTINGS.PRINT_FRAGMENT != 0)
                 FRAG_I.printFragParameters(this.tempFileName,
                         this.MORSETTINGS.PRINT_FRAGMENT,
-                        String.format("% .3e ", E.Ecore) + "D " + String.format("%-5.2f", E.RII));
+                        String.format("% .3e ", E.E) + "D " + String.format("%-5.2f", E.RII));
 
-            E.calcEnergy(FRAG_I);
+            //E.calcEnergy(FRAG_I);
             statE.add(E.E);
             statEcore.add(E.Ecore);
             statK.add(E.K);
@@ -671,8 +689,8 @@ public class MoRmodule {
             statModGsqErest.add(ModsGparts[1]);
             statModGsqEcore.add(ModsGparts[2]);
             statModGsqEpenalty.add(ModsGparts[3]);
-            E.wExray = calcW(statModGsqExray, statModGsqErest);
-            E.wEcore = calcW(statModGsqEcore, statModGsqEpenalty);
+            E.wExray = (MORSETTINGS.wExray == -1) ? calcW(statModGsqExray, statModGsqErest) : MORSETTINGS.wExray;
+            E.wEcore = (MORSETTINGS.wEcore == -1) ? calcW(statModGsqEcore, statModGsqEpenalty) : MORSETTINGS.wEcore;
 
 
 
@@ -680,12 +698,11 @@ public class MoRmodule {
             FRAG_II = null;
             FRAG_II = (FragmentData) deepClone(FRAG_I);
             jumpRaviness(FRAG_I, rho, h);
-
-
+            E.calcEnergy(FRAG_I);
             if (this.MORSETTINGS.PRINT_FRAGMENT != 0)
                 FRAG_I.printFragParameters(this.tempFileName,
                         this.MORSETTINGS.PRINT_FRAGMENT,
-                        String.format("% .3e ", E.Ecore) + "J " + String.format("%-5.2f", E.RII));
+                        String.format("% .3e ", E.E) + "J " + String.format("%-5.2f", E.RII));
 
             strSTATUS.setLength(0);
             strSTATUS.append("Iteration number  ");
