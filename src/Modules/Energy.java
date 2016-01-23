@@ -93,7 +93,7 @@ public class Energy {
 //              if ((R != 0) && (R < itemApair.RVdW))
 //                  partErest += Math.pow(Math.pow(c * RVdW, n) - Math.pow(R, n), m);
         for (aPair itemApair : aPairs) {
-            if(itemApair.R < itemApair.DVdW) {
+            if((itemApair.R != 0) && (itemApair.R < itemApair.DVdW)) {
                 restrain += Math.pow(Math.min(itemApair.R - itemApair.DVdW, 0), 2);
             }
         }
@@ -133,9 +133,9 @@ public class Energy {
                                         for (int tZ = -1; tZ < 2; tZ++){
                                             double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
                                             if (ifInCell(
-                                                    (VECT_jt[0] + VECT_it[0]) / 2,
-                                                    (VECT_jt[1] + VECT_it[1]) / 2,
-                                                    (VECT_jt[2] + VECT_it[2]) / 2)) {
+                                                    (VECT_jt[0] + VECT_it[0]) / 2.0,
+                                                    (VECT_jt[1] + VECT_it[1]) / 2.0,
+                                                    (VECT_jt[2] + VECT_it[2]) / 2.0)) {
                                                 double R = this.CELL.calcDistance(VECT_it[0] - VECT_jt[0], VECT_it[1] - VECT_jt[1], VECT_it[2] - VECT_jt[2]);
                                                 result.add(new aPair(
                                                         VECT_it[0], VECT_it[1], VECT_it[2],
@@ -294,6 +294,11 @@ public class Energy {
         if (this.OPT.contains("Xr3")) {
             partExray = sumFomkFc / Na;
         }
+        
+        if (this.OPT.contains("Xr4")) {
+            partExray = sumwFomFcSq;
+        }
+
         if (this.OPT.contains("Pa")) {
             partExray = PattersonEnergy(this.SYM, FRAG);
         }
