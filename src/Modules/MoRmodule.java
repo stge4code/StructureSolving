@@ -24,7 +24,7 @@ import static Utilities.ObjectsUtilities.*;
  */
 public class MoRmodule {
 
-    public UnitCell CELL;
+    public final UnitCell CELL;
     public FragmentData FRAG;
     public DiffractionData HKL;
     public Symmetry SYM;
@@ -577,10 +577,10 @@ public class MoRmodule {
         if (this.ParametersList.length == 0) {
             E.OPT = MORSETTINGS.Eopt;
             E.calcEnergy(FRAG);
-            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (S)", E.RI));
-            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (C)", E.RII));
-            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (W)", E.RIII));
-            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor ", E.RIV));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (S) - RI", E.RI));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (C) - RII", E.RII));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (W) - RIII", E.RIII));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor - RIV", E.RIV));
             strOUT.append(String.format(" %-30s= %-12e\n", "Chem part of minimum E", E.Erest));
             strOUT.append(String.format(" %-30s= %-12e\n", "Energy", E.E));
             strOUT.append(String.format(" %-30s= %-12e\n", "Penalty function", E.Epenalty));
@@ -609,7 +609,7 @@ public class MoRmodule {
             }
             System.out.print("\r\r");
         } else {
-            randomizeParameters(CELL, FRAG, MORSETTINGS.FIRST_RANDOMIZATION);
+            randomizeParameters(this.CELL, FRAG, MORSETTINGS.FIRST_RANDOMIZATION);
         }
         FRAG.printFrags();
 

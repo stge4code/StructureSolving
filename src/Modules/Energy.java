@@ -93,7 +93,9 @@ public class Energy {
 //              if ((R != 0) && (R < itemApair.RVdW))
 //                  partErest += Math.pow(Math.pow(c * RVdW, n) - Math.pow(R, n), m);
         for (aPair itemApair : aPairs) {
-            restrain += Math.pow(Math.min(itemApair.R - itemApair.DVdW, 0), 2);
+            if(itemApair.R < itemApair.DVdW) {
+                restrain += Math.pow(Math.min(itemApair.R - itemApair.DVdW, 0), 2);
+            }
         }
             return restrain;
     }
