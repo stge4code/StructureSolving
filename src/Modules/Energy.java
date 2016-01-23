@@ -294,7 +294,7 @@ public class Energy {
         if (this.OPT.contains("Xr3")) {
             partExray = sumFomkFc / Na;
         }
-        
+
         if (this.OPT.contains("Xr4")) {
             partExray = sumwFomFcSq;
         }
