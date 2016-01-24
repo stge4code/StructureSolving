@@ -32,8 +32,8 @@ public class Energy {
     public double RIII;
     public double RIV;
     private PenaltyFunction PSI;
-    private ArrayList<Double> statWhkl = new ArrayList<>();
-    private ArrayList<Double> statFc = new ArrayList<>();
+    private List<Double> statWhkl = new ArrayList<>();
+    private List<Double> statFc = new ArrayList<>();
 
 
     public class aPair {
@@ -70,7 +70,7 @@ public class Energy {
         this.Epenalty = 0.0;
         this.wExray = 1.0;
         this.wEcore = 1.0;
-        this.K = 2.6891;
+        this.K = 1.0;
         this.RI = 0;
         this.RII = 0;
         this.RIII = 0;
@@ -172,7 +172,7 @@ public class Energy {
                     wHKL = 1 / Math.pow(itemHKL.Fsq, 2);
                     break;
                 case 2:
-                    wHKL = 1;
+                    wHKL = 1.0;
                     break;
                 default:
                     break;
@@ -237,8 +237,8 @@ public class Energy {
         double partExray = 0;
         double partErest = 0;
 
-        double[] cellTranslations = {this.CELL.getA(), this.CELL.getB(), this.CELL.getC()};
-        Arrays.sort(cellTranslations);
+        //double[] cellTranslations = {this.CELL.getA(), this.CELL.getB(), this.CELL.getC()};
+        //Arrays.sort(cellTranslations);
         double sumFoFc = 0;
         double sumFcFc = 0;
         double sumFomkFc = 0;

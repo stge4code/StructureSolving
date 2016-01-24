@@ -337,14 +337,9 @@ public final class FastMath {
 
     public static void randomizeParameters(UnitCell CELL, FragmentData FRAG, int NUM) {
 
-        double dX = 0;
-        double dY = 0;
-        double dZ = 0;
-        double dPhi1 = 0;
-        double dPhi2 = 0;
-        double dTheta = 0;
-        double dO = 0;
-        double dU = 0;
+        double dX = 0, dY = 0, dZ = 0;
+        double dPhi1 = 0, dPhi2 = 0, dTheta = 0;
+        double dO = 0, dU = 0;
 
         for (int randNUM = 0; randNUM < NUM; randNUM++) {
             for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {

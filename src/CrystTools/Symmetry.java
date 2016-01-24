@@ -1,11 +1,14 @@
 package CrystTools;
 
 import MathTools.FastMath;
+import Utilities.ObjectsUtilities;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,11 +18,11 @@ import static Utilities.ObjectsUtilities.deepClone;
  * Created by Administrator on 14.09.2015.
  */
 public class Symmetry {
-    private ArrayList<SymmetryItem> symMass = new ArrayList<>();
+    private List<SymmetryItem> symMass = new ArrayList<>();
     private String symFileName;
     private int LATT = 0;
 
-    public ArrayList<SymmetryItem> getSymMass() {
+    public List<SymmetryItem> getSymMass() {
         return symMass;
     }
 
@@ -28,14 +31,10 @@ public class Symmetry {
     }
 
     public Symmetry(String symFileName) {
-        ArrayList<SymmetryItem> symMassSourse = new ArrayList<SymmetryItem>();
+        List<SymmetryItem> symMassSourse = new ArrayList<SymmetryItem>();
         this.symFileName = symFileName;
-        File fileSYM = new File(this.symFileName);
-        try {
-            BufferedReader inSYM = new BufferedReader(new FileReader(fileSYM.getAbsoluteFile()));
-            try {
-                String s;
-                while  ((s = inSYM.readLine()) != null) {
+        List<String> input = ObjectsUtilities.getContentFromFile(this.symFileName);
+        for (String s : input) {
                     if(s.indexOf("LATT")!= -1) {
                         this.LATT = Integer.parseInt(s.substring(4).replaceAll("\\s+", ""));
                     }
@@ -43,7 +42,7 @@ public class Symmetry {
                     if(s.indexOf("SYMM")!= -1) {
                         try {
 
-                            ArrayList<String> allMatches = new ArrayList<String>();
+                            List<String> allMatches = new ArrayList<String>();
                             Matcher m = Pattern.compile("[^,]+").matcher(s.substring(4).replaceAll("\\s+", ""));
                             while (m.find()) {
                                 allMatches.add(m.group());
@@ -118,12 +117,7 @@ public class Symmetry {
                 SYMt = null;
                 LATTirazation();
 
-            } finally {
-                inSYM.close();
-            }
-        } catch (IOException eCELL) {
-            throw new RuntimeException(eCELL);
-        }
+
     }
 
     public int getLATT() {
@@ -157,7 +151,7 @@ public class Symmetry {
     public void LATTirazation(){
         double[][] SYMr = new double[3][3];
         double[] SYMt = new double[3];
-        ArrayList<SymmetryItem> subSymMass = new ArrayList<>();
+        List<SymmetryItem> subSymMass = new ArrayList<>();
         subSymMass =   (ArrayList<SymmetryItem>) deepClone(this.symMass);
         for (SymmetryItem itemSYM : subSymMass){
             switch (Math.abs(this.LATT)) {

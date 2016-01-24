@@ -1,11 +1,18 @@
 package Utilities;
 
+import CrystTools.Atom;
+import CrystTools.Fragment;
+import CrystTools.SymmetryItem;
+import MathTools.FastMath;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -71,5 +78,46 @@ public class ObjectsUtilities {
     }
     public static <T> void with(T obj, Consumer<T> c) {
         c.accept(obj);
+    }
+
+    public static List<String> getContentFromFile(String fileName){
+        List<String> result = new ArrayList<>();
+        File file = new File(fileName);
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            try {
+                String s;
+                while ((s = in.readLine()) != null) {
+                    if (!s.isEmpty()) result.add(s);
+                }
+            } finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+    public static void putContentToFile(String fileName, List<String> output){
+        putContentToFile(fileName, output, false);
+    }
+    public static void putContentToFile(String fileName, List<String> output, boolean append){
+        File fileOUT = new File(fileName);
+        try {
+            if (!fileOUT.exists()) {
+                fileOUT.createNewFile();
+            }
+
+            PrintWriter out = new PrintWriter(new FileWriter(fileOUT.getAbsoluteFile(), append));
+
+            try {
+                for(String s : output)  out.println(s);
+
+            } finally {
+                out.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

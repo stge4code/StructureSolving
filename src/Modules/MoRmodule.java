@@ -4,6 +4,7 @@ import CrystTools.Fragment;
 import CrystTools.Symmetry;
 import CrystTools.UnitCell;
 import MathTools.FastMath;
+import Utilities.ObjectsUtilities;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -72,98 +73,86 @@ public class MoRmodule {
         //----------------------------------------------------------------------------------------------------------------------
         public RavinessSettings(String ravinessDataFilename) {
             this.ravinessSettingsFilename = ravinessDataFilename;
-            File fileRavinessSettings = new File(this.ravinessSettingsFilename);
-            try {
-                BufferedReader inRavinessSettings = new BufferedReader(new FileReader(fileRavinessSettings.getAbsoluteFile()));
+            List<String> input = ObjectsUtilities.getContentFromFile(ravinessDataFilename);
+            for (String s : input) {
                 try {
-                    String s;
-                    while ((s = inRavinessSettings.readLine()) != null) {
-                        try {
-                            if (!s.isEmpty()) {
-                                Pattern p = Pattern.compile("(\\S+)");
-                                Matcher m = p.matcher(s);
-                                List<String> allMatches = new ArrayList<String>();
-                                while (m.find()) allMatches.add(m.group());
-                                switch (allMatches.get(0)) {
-                                    case "N":
-                                        this.N = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "REFRESH":
-                                        this.REFRESH = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "n":
-                                        this.n = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "h":
-                                        this.h = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "c1":
-                                        this.c1 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "c2":
-                                        this.c2 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "c3":
-                                        this.c3 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "Epsilon2":
-                                        this.Epsilon2 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "Epsilon1":
-                                        this.Epsilon1 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "Delta2":
-                                        this.Delta2 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "Delta":
-                                        this.Delta = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "E":
-                                        this.Eopt = allMatches.get(1);
-                                        break;
-                                    case "wExray":
-                                        if(allMatches.get(1).contains("A")){
-                                            this.wExray = -1;
-                                        } else {
-                                            this.wExray = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        }
-                                        break;
-                                    case "wEcore":
-                                        if(allMatches.get(1).contains("A")){
-                                            this.wEcore = -1;
-                                        } else {
-                                            this.wEcore = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        }
-                                        break;
-                                    case "Delta1":
-                                        this.Delta1 = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "FIRST_RANDOMIZATION":
-                                        this.FIRST_RANDOMIZATION = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "MINIMA_SEARCH_METHOD":
-                                        this.MINIMA_SEARCH_METHOD = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "SAVE_BEST_RESULT":
-                                        this.SAVE_BEST_RESULT = allMatches.get(1);
-                                        break;
-                                    case "PRINT_FRAGMENT":
-                                        this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                allMatches.clear();
+                    Pattern p = Pattern.compile("(\\S+)");
+                    Matcher m = p.matcher(s);
+                    List<String> allMatches = new ArrayList<String>();
+                    while (m.find()) allMatches.add(m.group());
+                    switch (allMatches.get(0)) {
+                        case "N":
+                            this.N = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "REFRESH":
+                            this.REFRESH = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "n":
+                            this.n = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "h":
+                            this.h = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "c1":
+                            this.c1 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "c2":
+                            this.c2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "c3":
+                            this.c3 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "Epsilon2":
+                            this.Epsilon2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "Epsilon1":
+                            this.Epsilon1 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "Delta2":
+                            this.Delta2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "Delta":
+                            this.Delta = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "E":
+                            this.Eopt = allMatches.get(1);
+                            break;
+                        case "wExray":
+                            if (allMatches.get(1).contains("A")) {
+                                this.wExray = -1;
+                            } else {
+                                this.wExray = Double.valueOf(allMatches.get(1)).doubleValue();
                             }
-                        } catch (NumberFormatException s2nRavinessSettings) {
-                            //throw new RuntimeException(s2n);
-                        }
+                            break;
+                        case "wEcore":
+                            if (allMatches.get(1).contains("A")) {
+                                this.wEcore = -1;
+                            } else {
+                                this.wEcore = Double.valueOf(allMatches.get(1)).doubleValue();
+                            }
+                            break;
+                        case "Delta1":
+                            this.Delta1 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "FIRST_RANDOMIZATION":
+                            this.FIRST_RANDOMIZATION = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "MINIMA_SEARCH_METHOD":
+                            this.MINIMA_SEARCH_METHOD = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "SAVE_BEST_RESULT":
+                            this.SAVE_BEST_RESULT = allMatches.get(1);
+                            break;
+                        case "PRINT_FRAGMENT":
+                            this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
+                            break;
+                        default:
+                            break;
                     }
-                } finally {
-                    inRavinessSettings.close();
+                    allMatches.clear();
+                } catch (NumberFormatException e) {
+                    //throw new RuntimeException(e);
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
     }
@@ -192,7 +181,6 @@ public class MoRmodule {
         consoleHandler.setLevel(Level.FINER);
         log.getAnonymousLogger().addHandler(consoleHandler);
     }
-
 
 
     public double findt(FragmentData FRAG, Energy E, double[] g) {
@@ -265,7 +253,6 @@ public class MoRmodule {
 //    }
 
 
-
     public double findDt(FragmentData FRAG, Energy E, double[] g, double t) {
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(t, g));
         double dt = this.MORSETTINGS.c3;
@@ -277,10 +264,8 @@ public class MoRmodule {
         double E1 = E.E;
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(-dt, g));
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(-t, g));
-        return  (E1 - E0) / dt / 2;
+        return (E1 - E0) / dt / 2;
     }
-
-
 
 
 //    public double findD2t(FragmentData FRAG, Energy E, double[] g, double t) {
@@ -378,7 +363,7 @@ public class MoRmodule {
             double a = 0;
             double b = tmin;
             int N = this.MORSETTINGS.n;
-            ArrayList<Double> F_R = FastMath.findFibonacciNumbersRatios(N);
+            List<Double> F_R = FastMath.findFibonacciNumbersRatios(N);
             double x1 = 0;
             double x2 = 0;
             for (int i = 1; i < N - 1; i++) {
@@ -391,11 +376,11 @@ public class MoRmodule {
                 E.calcEnergy(FRAG);
                 double E2 = E.E;
                 addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(-x2, g));
-                if ( E1 > E2 ) {
+                if (E1 > E2) {
                     a = x1;
-                } else if ( E1 < E2 ) {
+                } else if (E1 < E2) {
                     b = x2;
-                } else if ( E1 == E2 ) {
+                } else if (E1 == E2) {
                     a = x1;
                     b = x2;
                 }
@@ -459,7 +444,7 @@ public class MoRmodule {
             addToParameters(CELL, FRAG, ParametersList, i, -2 * dx);
             //E.calcEnergy(FRAG);
             //Eb = E.E;
-            dE[i] = ( E0 - 8 * E1 + 8 * E3 - E4 ) / dx / 12;
+            dE[i] = (E0 - 8 * E1 + 8 * E3 - E4) / dx / 12;
             //dE[i] = -( E0 - 8 * E1 + 8 * E3 - E4 ) / dx / 12;
         }
         double[] g = FastMath.KmV(-1.0, dE);
@@ -470,7 +455,6 @@ public class MoRmodule {
         }
         return g;
     }
-
 
 
     public double[] findModsGEparts(FragmentData FRAG, Energy E) {
@@ -641,7 +625,7 @@ public class MoRmodule {
 
             //FRAG_I.fragsParametersAdjustment();
 
-            if (this.MORSETTINGS.REFRESH - i % this.MORSETTINGS.REFRESH == 1){
+            if (this.MORSETTINGS.REFRESH - i % this.MORSETTINGS.REFRESH == 1) {
                 statE.clear();
                 statEcore.clear();
                 statK.clear();
@@ -683,7 +667,6 @@ public class MoRmodule {
             minEcore = (minEcore == 0) ? E.Ecore : Math.min(E.Ecore, minEcore);
 
 
-
             double[] ModsGparts = findModsGEparts(FRAG_I, E);
             statModGsqExray.add(ModsGparts[0]);
             statModGsqErest.add(ModsGparts[1]);
@@ -691,7 +674,6 @@ public class MoRmodule {
             statModGsqEpenalty.add(ModsGparts[3]);
             E.wExray = (MORSETTINGS.wExray == -1) ? calcW(statModGsqExray, statModGsqErest) : MORSETTINGS.wExray;
             E.wEcore = (MORSETTINGS.wEcore == -1) ? calcW(statModGsqEcore, statModGsqEpenalty) : MORSETTINGS.wEcore;
-
 
 
             rho = findRho(FRAG_II, FRAG_I);

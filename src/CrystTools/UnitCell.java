@@ -1,10 +1,12 @@
 package CrystTools;
 
 import MathTools.FastMath;
+import Utilities.ObjectsUtilities;
 
 import java.io.*;
 import java.net.SocketPermission;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -105,16 +107,15 @@ public class UnitCell implements Serializable {
         return gamma;
     }
 
-    public void calcVolume(){
-        
+    public void calcVolume() {
 
-        
+
         this.V = this.a * this.b * this.c *
                 Math.sqrt(1 - Math.pow(this.cA, 2.0) - Math.pow(this.cB, 2.0) - Math.pow(this.cG, 2.0) + 2 * this.cA * this.cB * this.cG);
     }
 
 
-    public void calcReciprocalVect(){
+    public void calcReciprocalVect() {
 
         this.aStar = Math.abs(this.b * this.c * FastMath.d2rSin(this.alpha)) / this.V;
         this.bStar = Math.abs(this.a * this.c * FastMath.d2rSin(this.beta)) / this.V;
@@ -124,8 +125,8 @@ public class UnitCell implements Serializable {
 //                FastMath.d2rCos(this.beta) * FastMath.d2rCos(this.gamma))) * 180 / Math.PI;
 
 
-        this.alphaStar =  Math.acos((this.cB * this.cG - this.cA) / (this.sB * this.sG)) * 180 / Math.PI;
-        this.betaStar =  Math.acos((this.cA * this.cG - this.cB) / (this.sA * this.sG)) * 180 / Math.PI;
+        this.alphaStar = Math.acos((this.cB * this.cG - this.cA) / (this.sB * this.sG)) * 180 / Math.PI;
+        this.betaStar = Math.acos((this.cA * this.cG - this.cB) / (this.sA * this.sG)) * 180 / Math.PI;
         this.gammaStar = Math.acos((this.cA * this.cB - this.cG) / (this.sA * this.sB)) * 180 / Math.PI;
 
 //        this.betaStar = Math.asin(this.V / (this.a * this.b * this.c *
@@ -134,7 +135,6 @@ public class UnitCell implements Serializable {
 //                FastMath.d2rCos(this.alpha) * FastMath.d2rCos(this.beta))) * 180 / Math.PI;
 
         this.Vstar = 1 / this.V;
-
 
 
     }
@@ -197,9 +197,9 @@ public class UnitCell implements Serializable {
 
 
         VECT[0] = 1 / this.a * x - this.cG / this.a / this.sG * y +
-                (this.b * this.c * this.cG *(this.cA - this.cB * this.cG) / this.sG - this.b * this.c * this.cB * this.sG) / this.V * z;
+                (this.b * this.c * this.cG * (this.cA - this.cB * this.cG) / this.sG - this.b * this.c * this.cB * this.sG) / this.V * z;
         VECT[1] = 1 / this.b / this.sG * y - this.a * this.c * (this.cA - this.cB * this.cG) / this.sG / this.V * z;
-        VECT[2] = this.a * this. b * this.sG / this.V * z;
+        VECT[2] = this.a * this.b * this.sG / this.V * z;
 
         return VECT;
     }
@@ -222,13 +222,15 @@ public class UnitCell implements Serializable {
 
     /**
      * This methos is used for calculation of Scattering vector: S = 1 / (2 * d) = sin(theta) / lambda;
+     *
      * @param hkl
      * @return
      */
-    public  double calcScatVect(ReciprocalItem hkl){
+    public double calcScatVect(ReciprocalItem hkl) {
         return calcScatVect(hkl.h, hkl.k, hkl.l);
     }
-    public  double calcScatVect(int h, int k, int l){
+
+    public double calcScatVect(int h, int k, int l) {
         /*
         double h = hkl.h;
         double k = hkl.k;
@@ -275,22 +277,22 @@ public class UnitCell implements Serializable {
                 G[2][0], G[2][1], G[2][2]);
     }
 
-    public void printGstar(){
+    public void printGstar() {
         System.out.printf("\n     % 10.3f % 10.3f % 10.3f\nG* = % 10.3f % 10.3f % 10.3f\n     % 10.3f % 10.3f % 10.3f\n",
                 Gstar[0][0], Gstar[0][1], Gstar[0][2],
                 Gstar[1][0], Gstar[1][1], Gstar[1][2],
                 Gstar[2][0], Gstar[2][1], Gstar[2][2]);
     }
 
-    public void printGmGstar(){
-        double[][] GmGstar = FastMath.MmM(G,Gstar);
+    public void printGmGstar() {
+        double[][] GmGstar = FastMath.MmM(G, Gstar);
         System.out.printf("\n      % 10.3f % 10.3f % 10.3f\nGG* = % 10.3f % 10.3f % 10.3f\n      % 10.3f % 10.3f % 10.3f\n",
                 GmGstar[0][0], GmGstar[0][1], GmGstar[0][2],
                 GmGstar[1][0], GmGstar[1][1], GmGstar[1][2],
                 GmGstar[2][0], GmGstar[2][1], GmGstar[2][2]);
     }
 
-    public void calcTrigonometry(){
+    public void calcTrigonometry() {
         this.cA = FastMath.d2rCos(this.alpha);
         this.sA = FastMath.d2rSin(this.alpha);
         this.cB = FastMath.d2rCos(this.beta);
@@ -298,7 +300,8 @@ public class UnitCell implements Serializable {
         this.cG = FastMath.d2rCos(this.gamma);
         this.sG = FastMath.d2rSin(this.gamma);
     }
-    public void calcTrigonometryStar(){
+
+    public void calcTrigonometryStar() {
         this.cAstar = FastMath.d2rCos(this.alphaStar);
         this.sAstar = FastMath.d2rSin(this.alphaStar);
         this.cBstar = FastMath.d2rCos(this.betaStar);
@@ -310,41 +313,31 @@ public class UnitCell implements Serializable {
 
     public UnitCell(String unitCellFileName) {
         this.unitCellFileName = unitCellFileName;
-        File fileCELL = new File(this.unitCellFileName);
-        try {
-            BufferedReader inCELL = new BufferedReader(new FileReader(fileCELL.getAbsoluteFile()));
-            try {
-                String s;
-                while  ((s = inCELL.readLine()) != null) {
-                    if(s.indexOf("CELL")!= -1) {
-                        try {
-                            ArrayList<String> allMatches = new ArrayList<String>();
-                            Matcher m = Pattern.compile("[-+]?[\\d]*\\.?[\\d]+").matcher(s.substring(4));
-                            while (m.find()) {
-                                allMatches.add(m.group());
-                            }
-                            this.a = (Double.valueOf(allMatches.get(1)).doubleValue());
-                            this.b = (Double.valueOf(allMatches.get(2)).doubleValue());
-                            this.c = (Double.valueOf(allMatches.get(3)).doubleValue());
-                            this.alpha = (Double.valueOf(allMatches.get(4)).doubleValue());
-                            this.beta = (Double.valueOf(allMatches.get(5)).doubleValue());
-                            this.gamma = (Double.valueOf(allMatches.get(6)).doubleValue());
-                            this.calcTrigonometry();
-                            this.calcVolume();
-                            this.calcReciprocalVect();
-                            this.calcTrigonometryStar();
-                            this.calcG();
-                            this.calcGstar();
-                        } catch (NumberFormatException e) {
-                        }
+        List<String> input = ObjectsUtilities.getContentFromFile(this.unitCellFileName);
+        for (String s : input) {
+            if (s.indexOf("CELL") != -1) {
+                try {
+                    ArrayList<String> allMatches = new ArrayList<String>();
+                    Matcher m = Pattern.compile("[-+]?[\\d]*\\.?[\\d]+").matcher(s.substring(4));
+                    while (m.find()) {
+                        allMatches.add(m.group());
                     }
+                    this.a = (Double.valueOf(allMatches.get(1)).doubleValue());
+                    this.b = (Double.valueOf(allMatches.get(2)).doubleValue());
+                    this.c = (Double.valueOf(allMatches.get(3)).doubleValue());
+                    this.alpha = (Double.valueOf(allMatches.get(4)).doubleValue());
+                    this.beta = (Double.valueOf(allMatches.get(5)).doubleValue());
+                    this.gamma = (Double.valueOf(allMatches.get(6)).doubleValue());
+                    this.calcTrigonometry();
+                    this.calcVolume();
+                    this.calcReciprocalVect();
+                    this.calcTrigonometryStar();
+                    this.calcG();
+                    this.calcGstar();
+                } catch (NumberFormatException e) {
                 }
-
-            } finally {
-                inCELL.close();
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
         }
     }
 }

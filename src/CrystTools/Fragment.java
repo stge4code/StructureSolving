@@ -5,6 +5,7 @@ import MathTools.SpecialFunction;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 
 import static Utilities.ObjectsUtilities.deepClone;
 
@@ -29,8 +30,8 @@ public class Fragment implements Serializable {
     private Double fragPhi2 = Double.valueOf(0);
     private Double fragTheta = Double.valueOf(0);
 
-    private ArrayList<Atom> fragAtoms = new ArrayList<>();
-    private ArrayList<Atom> fragAtomsSource = new ArrayList<>();
+    private List<Atom> fragAtoms = new ArrayList<>();
+    private List<Atom> fragAtomsSource = new ArrayList<>();
 
     public String getFragName() {
         return fragName;
@@ -96,7 +97,7 @@ public class Fragment implements Serializable {
         this.fragTheta = fragTheta;
     }
 
-    public ArrayList<Atom> getFragAtoms() {
+    public List<Atom> getFragAtoms() {
         return fragAtoms;
     }
 
@@ -137,7 +138,7 @@ public class Fragment implements Serializable {
 
 
     public Fragment(String fragName,
-                    ArrayList<Atom> fragAtoms,
+                    List<Atom> fragAtoms,
                     int fragNum,
                     double fragO,
                     double fragU,

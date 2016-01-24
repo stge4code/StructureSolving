@@ -3,6 +3,7 @@ package Modules;
 import CrystTools.Fragment;
 import CrystTools.Symmetry;
 import CrystTools.UnitCell;
+import Utilities.ObjectsUtilities;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -37,34 +38,24 @@ public class SAmodule {
 
         public TemperatureData(String temperatureDataFilename) {
             this.temperatureDataFilename = temperatureDataFilename;
-            File fileTemperatureData = new File(this.temperatureDataFilename);
-            try {
-                BufferedReader inTemperatureData = new BufferedReader(new FileReader(fileTemperatureData.getAbsoluteFile()));
+            List<String> input = ObjectsUtilities.getContentFromFile(this.temperatureDataFilename);
+            for (String s : input) {
                 try {
-                    String s;
-                    while ((s = inTemperatureData.readLine()) != null) {
-                        try {
-                            Pattern p = Pattern.compile("(\\S+)");
-                            Matcher m = p.matcher(s);
-                            ArrayList<String> allMatches = new ArrayList<String>();
-                            while (m.find()) {
-                                allMatches.add(m.group());
-                            }
-                            this.tempRegime.add(new TemperatureItem(
-                                    Double.valueOf(allMatches.get(0)).doubleValue(),
-                                    Integer.parseInt(allMatches.get(1)),
-                                    allMatches.get(2)
-                            ));
-
-                        } catch (NumberFormatException s2nTemperatureData) {
-                            //throw new RuntimeException(s2n);
-                        }
+                    Pattern p = Pattern.compile("(\\S+)");
+                    Matcher m = p.matcher(s);
+                    List<String> allMatches = new ArrayList<String>();
+                    while (m.find()) {
+                        allMatches.add(m.group());
                     }
-                } finally {
-                    inTemperatureData.close();
+                    this.tempRegime.add(new TemperatureItem(
+                            Double.valueOf(allMatches.get(0)).doubleValue(),
+                            Integer.parseInt(allMatches.get(1)),
+                            allMatches.get(2)
+                    ));
+
+                } catch (NumberFormatException s2nTemperatureData) {
+                    //throw new RuntimeException(s2n);
                 }
-            } catch (IOException eTemperatureData) {
-                throw new RuntimeException(eTemperatureData);
             }
         }
 
@@ -76,7 +67,7 @@ public class SAmodule {
             this.temperatureDataFilename = cycleDataFilename;
         }
 
-        public ArrayList<TemperatureItem> getREGIME() {
+        public List<TemperatureItem> getREGIME() {
             return tempRegime;
         }
 
@@ -88,7 +79,6 @@ public class SAmodule {
         private double cycleT;
         private int cycleIterations;
         private String cycleOpt;
-
 
 
         public TemperatureItem(double cyclet, int cycleiterations, String cycleopt) {
@@ -113,50 +103,40 @@ public class SAmodule {
 
         public AnnealingSettings(String annealingSettingsFilename) {
             this.annealingSettingsFilename = annealingSettingsFilename;
-            File fileAnnealingSettings = new File(this.annealingSettingsFilename);
-            try {
-                BufferedReader inAnnealingSettings = new BufferedReader(new FileReader(fileAnnealingSettings.getAbsoluteFile()));
+            List<String> input = ObjectsUtilities.getContentFromFile(this.annealingSettingsFilename);
+            for (String s : input) {
                 try {
-                    String s;
-                    while ((s = inAnnealingSettings.readLine()) != null) {
-                        try {
-                            if (!s.isEmpty()) {
-                                Pattern p = Pattern.compile("(\\S+)");
-                                Matcher m = p.matcher(s);
-                                ArrayList<String> allMatches = new ArrayList<String>();
-                                while (m.find()) allMatches.add(m.group());
-                                switch (allMatches.get(0)) {
-                                    case "P_FOR_KB":
-                                        this.P_FOR_KB = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "RANDOMIZE_ACCURACY":
-                                        this.RANDOMIZE_ACCURACY = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "FIRST_RANDOMIZATION":
-                                        this.FIRST_RANDOMIZATION = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    case "MAX_PARAMETERS_STEP":
-                                        this.MAX_PARAMETERS_STEP = Double.valueOf(allMatches.get(1)).doubleValue();
-                                        break;
-                                    case "SAVE_BEST_RESULT":
-                                        this.SAVE_BEST_RESULT = allMatches.get(1);
-                                        break;
-                                    case "PRINT_FRAGMENT":
-                                        this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                allMatches.clear();
-                            }
-                        } catch (NumberFormatException s2nAnnealingSettings) {
+                    if (!s.isEmpty()) {
+                        Pattern p = Pattern.compile("(\\S+)");
+                        Matcher m = p.matcher(s);
+                        ArrayList<String> allMatches = new ArrayList<String>();
+                        while (m.find()) allMatches.add(m.group());
+                        switch (allMatches.get(0)) {
+                            case "P_FOR_KB":
+                                this.P_FOR_KB = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "RANDOMIZE_ACCURACY":
+                                this.RANDOMIZE_ACCURACY = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "FIRST_RANDOMIZATION":
+                                this.FIRST_RANDOMIZATION = Integer.parseInt(allMatches.get(1));
+                                break;
+                            case "MAX_PARAMETERS_STEP":
+                                this.MAX_PARAMETERS_STEP = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "SAVE_BEST_RESULT":
+                                this.SAVE_BEST_RESULT = allMatches.get(1);
+                                break;
+                            case "PRINT_FRAGMENT":
+                                this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
+                                break;
+                            default:
+                                break;
                         }
+                        allMatches.clear();
                     }
-                } finally {
-                    inAnnealingSettings.close();
+                } catch (NumberFormatException s2nAnnealingSettings) {
                 }
-            } catch (IOException eAnnealingSettings) {
-                throw new RuntimeException(eAnnealingSettings);
             }
         }
     }
@@ -492,11 +472,11 @@ public class SAmodule {
             System.exit(0);
         }
 
-        if ( (new File (this.resultFileName) ).exists() && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
+        if ((new File(this.resultFileName)).exists() && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
             try {
                 System.out.print("Fragment data loading...");
                 FragmentData FRAG_LOAD = (FragmentData) recallObject(this.resultFileName);
-                for (Fragment itemFrag : FRAG_LOAD.getFragMass()){
+                for (Fragment itemFrag : FRAG_LOAD.getFragMass()) {
                     itemFrag.setFragOPT(FRAG.getFragMass().get(FRAG_LOAD.getFragMass().indexOf(itemFrag)).getFragOPT());
                 }
                 FRAG = (FragmentData) deepClone(FRAG_LOAD);
@@ -660,8 +640,10 @@ public class SAmodule {
                     if (RI != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (with scale)", RI);
                     if (RII != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (without scale)", RII);
                     if (RIII != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (with weights)", RIII);
-                    if (minEExray != 0) strOUT += String.format(" %-30s= %-12e\n", "Xray part of minimum E", minEExray);
-                    if (minEErest != 0) strOUT += String.format(" %-30s= %-12e\n", "Chem part of minimum E", minEErest);
+                    if (minEExray != 0)
+                        strOUT += String.format(" %-30s= %-12e\n", "Xray part of minimum E", minEExray);
+                    if (minEErest != 0)
+                        strOUT += String.format(" %-30s= %-12e\n", "Chem part of minimum E", minEErest);
 //----------------------------------------------------------------------------------------------------------------------
                 }
                 System.out.print("\r" +

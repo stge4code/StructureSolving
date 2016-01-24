@@ -5,6 +5,7 @@ import CrystTools.Fragment;
 import CrystTools.ReciprocalItem;
 import CrystTools.UnitCell;
 import MathTools.FastMath;
+import Utilities.ObjectsUtilities;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -22,12 +23,12 @@ import static Utilities.ObjectsUtilities.generateAtomNum;
  */
 public class DiffractionData {
     private String diffDataFilename = "";
-    private ArrayList<ReciprocalItem> HKL = new ArrayList<>();
+    private List<ReciprocalItem> HKL = new ArrayList<>();
     private DiffractionDataSettings DIFDATASETTINGS;
 
 
     public class DiffractionDataSettings {
-        private String diffractionDataSettingsFilename = "";
+        private String diffractionDataSettingsFilename;
         private String MERGE;
         private int[] N = new int[2];
         private SortRules SORT_H = new SortRules();
@@ -57,54 +58,44 @@ public class DiffractionData {
 
         public DiffractionDataSettings(String diffractionDataFilename) {
             this.diffractionDataSettingsFilename = diffractionDataFilename;
-            File fileDiffractionDataSettings = new File(this.diffractionDataSettingsFilename);
-            try {
-                BufferedReader inDiffractionDataSettings = new BufferedReader(new FileReader(fileDiffractionDataSettings.getAbsoluteFile()));
+            List<String> input = ObjectsUtilities.getContentFromFile(diffractionDataFilename);
+            for (String s : input) {
                 try {
-                    String s;
-                    while ((s = inDiffractionDataSettings.readLine()) != null) {
-                        try {
-                            if (!s.isEmpty()) {
-                                Pattern p = Pattern.compile("(\\S+)");
-                                Matcher m = p.matcher(s);
-                                ArrayList<String> allMatches = new ArrayList<String>();
-                                while (m.find()) allMatches.add(m.group());
-                                switch (allMatches.get(0)) {
-                                    case "RES":
-                                        this.SORT_RES = genSortRules(allMatches.get(1));
-                                        break;
-                                    case "I/S(I)":
-                                        this.SORT_ISI = genSortRules(allMatches.get(1));
-                                        break;
-                                    case "H":
-                                        this.SORT_H = genSortRules(allMatches.get(1));
-                                        break;
-                                    case "K":
-                                        this.SORT_K = genSortRules(allMatches.get(1));
-                                        break;
-                                    case "L":
-                                        this.SORT_L = genSortRules(allMatches.get(1));
-                                        break;
-                                    case "N":
-                                        this.N[0] = (int) Double.valueOf(allMatches.get(1)).doubleValue();
-                                        this.N[1] = (int) Double.valueOf(allMatches.get(2)).doubleValue();
-                                        break;
-                                    case "MERGE":
-                                        this.MERGE = allMatches.get(1);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                allMatches.clear();
-                            }
-                        } catch (NumberFormatException s2nDiffractionDataSettings) {
+                    if (!s.isEmpty()) {
+                        Pattern p = Pattern.compile("(\\S+)");
+                        Matcher m = p.matcher(s);
+                        List<String> allMatches = new ArrayList<String>();
+                        while (m.find()) allMatches.add(m.group());
+                        switch (allMatches.get(0)) {
+                            case "RES":
+                                this.SORT_RES = genSortRules(allMatches.get(1));
+                                break;
+                            case "I/S(I)":
+                                this.SORT_ISI = genSortRules(allMatches.get(1));
+                                break;
+                            case "H":
+                                this.SORT_H = genSortRules(allMatches.get(1));
+                                break;
+                            case "K":
+                                this.SORT_K = genSortRules(allMatches.get(1));
+                                break;
+                            case "L":
+                                this.SORT_L = genSortRules(allMatches.get(1));
+                                break;
+                            case "N":
+                                this.N[0] = (int) Double.valueOf(allMatches.get(1)).doubleValue();
+                                this.N[1] = (int) Double.valueOf(allMatches.get(2)).doubleValue();
+                                break;
+                            case "MERGE":
+                                this.MERGE = allMatches.get(1);
+                                break;
+                            default:
+                                break;
                         }
+                        allMatches.clear();
                     }
-                } finally {
-                    inDiffractionDataSettings.close();
+                } catch (NumberFormatException e) {
                 }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
             }
         }
     }
@@ -116,35 +107,24 @@ public class DiffractionData {
         this.diffDataFilename = diffdatafilename;
         this.DIFDATASETTINGS = new DiffractionDataSettings(diffractionSettingsFilename);
 
-
-        File fileHKL = new File(diffDataFilename);
-        try {
-            BufferedReader inHKL = new BufferedReader(new FileReader(fileHKL.getAbsoluteFile()));
+        List<String> input = ObjectsUtilities.getContentFromFile(diffDataFilename);
+        for (String s : input) {
             try {
-                String s;
-                while ((s = inHKL.readLine()) != null) {
-                    try {
-                        Matcher m = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.*)$").matcher(s);
-                        if (m.find()) {
-                            if (m.group(4) != null) {
-                                int h = (int) Double.valueOf(m.group(1)).doubleValue();
-                                int k = (int) Double.valueOf(m.group(2)).doubleValue();
-                                int l = (int) Double.valueOf(m.group(3)).doubleValue();
-                                double Fsq = Double.valueOf(m.group(4)).doubleValue();
-                                double sigmaFsq = Double.valueOf(m.group(5)).doubleValue();
-                                double batchNumber = (!m.group(6).isEmpty()) ? Double.valueOf(m.group(6)).doubleValue() : 1.0;
-                                double scatvect = CELL.calcScatVect(h, k, l);
-                                this.HKL.add(new ReciprocalItem(h, k, l, Fsq, sigmaFsq, scatvect, batchNumber));
-                            }
-                        }
-                    } catch (NumberFormatException e) {
+                Matcher m = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.*)$").matcher(s);
+                if (m.find()) {
+                    if (m.group(4) != null) {
+                        int h = (int) Double.valueOf(m.group(1)).doubleValue();
+                        int k = (int) Double.valueOf(m.group(2)).doubleValue();
+                        int l = (int) Double.valueOf(m.group(3)).doubleValue();
+                        double Fsq = Double.valueOf(m.group(4)).doubleValue();
+                        double sigmaFsq = Double.valueOf(m.group(5)).doubleValue();
+                        double batchNumber = (!m.group(6).isEmpty()) ? Double.valueOf(m.group(6)).doubleValue() : 1.0;
+                        double scatvect = CELL.calcScatVect(h, k, l);
+                        this.HKL.add(new ReciprocalItem(h, k, l, Fsq, sigmaFsq, scatvect, batchNumber));
                     }
                 }
-            } finally {
-                inHKL.close();
+            } catch (NumberFormatException e) {
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
         System.out.print("\rLoading reflections...");
@@ -160,9 +140,8 @@ public class DiffractionData {
     }
 
 
-
-    private ArrayList<ReciprocalItem> mergeUniqueReflections(List<ReciprocalItem> unMerged) {
-        ArrayList<ReciprocalItem> merged = new ArrayList<>();
+    private List<ReciprocalItem> mergeUniqueReflections(List<ReciprocalItem> unMerged) {
+        List<ReciprocalItem> merged = new ArrayList<>();
         List<Integer> counter = new ArrayList<>();
         for (Iterator<ReciprocalItem> iterHKL = unMerged.iterator(); iterHKL.hasNext(); ) {
             ReciprocalItem itemHKL = iterHKL.next();
@@ -197,7 +176,7 @@ public class DiffractionData {
         return sorted;
     }
 
-    private boolean checkRules(UnitCell CELL, ReciprocalItem HKL){
+    private boolean checkRules(UnitCell CELL, ReciprocalItem HKL) {
         boolean condition = true;
         double checkvalue = 0;
         double resolution = 0;
@@ -241,9 +220,9 @@ public class DiffractionData {
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_H.e) {
-                if(S.contains("N")) {
+                if (S.contains("N")) {
                     boolean condition_temp = false;
-                    for(int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++){
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N)) + ")") - HKL.h == 0);
                         if (condition_temp) break;
@@ -273,9 +252,9 @@ public class DiffractionData {
 
             }
             for (String S : DIFDATASETTINGS.SORT_K.e) {
-                if(S.contains("N")) {
+                if (S.contains("N")) {
                     boolean condition_temp = false;
-                    for(int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++){
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")) - HKL.k == 0);
                         if (condition_temp) break;
@@ -304,18 +283,18 @@ public class DiffractionData {
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_L.e) {
-                if(S.contains("N")) {
+                if (S.contains("N")) {
                     boolean condition_temp = false;
-                    for(int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++){
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")) - HKL.l == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
                 } else if (S.contains("H") | S.contains("K")) {
-                        condition = condition & (FastMath.eval((S)
-                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
-                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
+                    condition = condition & (FastMath.eval((S)
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                 } else {
                     checkvalue = Double.valueOf(S).doubleValue();
                     condition = condition & (HKL.l == checkvalue);
@@ -335,31 +314,22 @@ public class DiffractionData {
         return condition;
     }
 
-    public ArrayList<ReciprocalItem> getHKL() {
+    public List<ReciprocalItem> getHKL() {
         return HKL;
     }
-    public void PrintHKL(String diffractionDataFilenameExport){
-        File fileOUT = new File(diffractionDataFilenameExport);
-        try {
-            if (!fileOUT.exists()) {
-                fileOUT.createNewFile();
-            }
-            PrintWriter out = new PrintWriter(fileOUT.getAbsoluteFile());
-            try {
-                for (ReciprocalItem itemHKL : this.HKL) {
-                        out.printf("% 4d% 4d% 4d% 8g% 8g% 4d\n",
-                                itemHKL.h,
-                                itemHKL.k,
-                                itemHKL.l,
-                                itemHKL.Fsq,
-                                itemHKL.sigmaFsq,
-                                (int) itemHKL.batchNumber);
-                    }
-            } finally {
-                out.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+
+    public void PrintHKL(String diffractionDataFilenameExport) {
+
+        List<String> output = new ArrayList<>();
+        for (ReciprocalItem itemHKL : this.HKL) {
+            output.add(String.format("% 4d% 4d% 4d% 8g% 8g% 4d",
+                    itemHKL.h,
+                    itemHKL.k,
+                    itemHKL.l,
+                    itemHKL.Fsq,
+                    itemHKL.sigmaFsq,
+                    (int) itemHKL.batchNumber));
         }
+        ObjectsUtilities.putContentToFile(diffractionDataFilenameExport, output);
     }
 }
