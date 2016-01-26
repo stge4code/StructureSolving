@@ -422,38 +422,49 @@ public class MoRmodule {
     public double[] findG(FragmentData FRAG, Energy E) {
         double[] dE = new double[this.ParametersList.length];
         double dx = this.MORSETTINGS.c3;
-        //E.calcEnergy(FRAG);
-        //double Eb = E.E;
-        //double Ea = E.E;
         for (int i = 0; i < this.ParametersList.length; i++) {
-            addToParameters(CELL, FRAG, ParametersList, i, -2 * dx);
-            E.calcEnergy(FRAG);
-            double E0 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, +dx);
-            E.calcEnergy(FRAG);
-            double E1 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, +dx);
-//            E.calcEnergy(FRAG);
-//            double E2 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, +dx);
-            E.calcEnergy(FRAG);
-            double E3 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, +dx);
-            E.calcEnergy(FRAG);
-            double E4 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, -2 * dx);
-            //E.calcEnergy(FRAG);
-            //Eb = E.E;
-            dE[i] = (E0 - 8 * E1 + 8 * E3 - E4) / dx / 12;
-            //dE[i] = -( E0 - 8 * E1 + 8 * E3 - E4 ) / dx / 12;
+            dE[i] = partialDerivative(FRAG, E, dx, i, 3);
         }
         double[] g = FastMath.KmV(-1.0, dE);
-        //double[] g = dE;
         double mdE = FastMath.modV(dE);
         for (int i = 0; i < this.ParametersList.length; i++) {
             g[i] = (mdE == 0) ? 0 : g[i] / mdE;
         }
         return g;
+    }
+
+    public double partialDerivative(FragmentData FRAG, Energy E, double dx, int i, int mode) {
+        double result = 0.0;
+        if (mode == 5) {
+            addToParameters(CELL, FRAG, ParametersList, i, -2.0 * dx);
+            E.calcEnergy(FRAG);
+            double E0 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, +dx);
+            E.calcEnergy(FRAG);
+            double E1 = E.E;
+            //addToParameters(CELL, FRAG, ParametersList, i, +dx);
+//            E.calcEnergy(FRAG);
+//            double E2 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, +2.0 * dx);
+            E.calcEnergy(FRAG);
+            double E3 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, +dx);
+            E.calcEnergy(FRAG);
+            double E4 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, -2.0 * dx);
+            result = (E0 - 8.0 * E1 + 8.0 * E3 - E4) / dx / 12.0;
+        }
+        if (mode == 3) {
+            addToParameters(CELL, FRAG, ParametersList, i, -dx);
+            E.calcEnergy(FRAG);
+            double E0 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, +2.0 * dx);
+            E.calcEnergy(FRAG);
+            double E2 = E.E;
+            addToParameters(CELL, FRAG, ParametersList, i, -dx);
+            result = (E2 - E0) / dx / 2.0;
+        }
+        return result;
     }
 
 
