@@ -324,7 +324,7 @@ public class Fragment implements Serializable {
         double ScatVect = HKL.scatvect;
         double ScatVectSq = Math.pow(HKL.scatvect, 2);
         double Debye_Coefficient = Math.exp(-8.0 * Math.pow(Math.PI, 2) * this.fragU * ScatVectSq);
-        if (scatType.contains("F1")) {
+        if (scatType.contains("F1b")) {
             atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);
             double D = fragDiameter(CELL);
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
@@ -339,6 +339,23 @@ public class Fragment implements Serializable {
                 }
             }
             double BessScat = SpecialFunction.j0(2 * Math.PI * ScatVect * D);
+            Fhkl[0] *= 60 * atomScattering * BessScat;
+            Fhkl[1] *= 60 * atomScattering * BessScat;
+        } else  if (scatType.contains("F1s")) {
+            atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);
+            double D = fragDiameter(CELL);
+            double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
+            for (SymmetryItem itemSYM : SYM.getSymMass()) {
+                double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
+                argPhase = 2 * Math.PI * (VECT[0] * HKL.h + VECT[1] * HKL.k + VECT[2] * HKL.l);
+                Fhkl[0] += Math.cos(argPhase);
+                if (SYM.getLATT() < 0) {
+                    Fhkl[1] += Math.sin(argPhase);
+                } else {
+                    Fhkl[1] = 0;
+                }
+            }
+            double BessScat = Math.sin(2 * Math.PI * ScatVect * D) / (2 * Math.PI * ScatVect * D);
             Fhkl[0] *= 60 * atomScattering * BessScat;
             Fhkl[1] *= 60 * atomScattering * BessScat;
         } else if (scatType.contains("F0")) {

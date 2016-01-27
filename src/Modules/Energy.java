@@ -166,10 +166,10 @@ public class Energy {
         for (ReciprocalItem itemHKL : this.HKL.getHKL()) {
             switch (mode) {
                 case 0:
-                    wHKL = 1 / (A + itemHKL.Fsq + C * Math.pow(itemHKL.Fsq, 2));
+                    wHKL = 1.0 / (A + itemHKL.Fsq + C * Math.pow(itemHKL.Fsq, 2));
                     break;
                 case 1:
-                    wHKL = 1 / Math.pow(itemHKL.Fsq, 2);
+                    wHKL = 1.0 / Math.pow(itemHKL.Fsq, 2);
                     break;
                 case 2:
                     wHKL = 1.0;
@@ -267,10 +267,8 @@ public class Energy {
             sumFomkFc += Math.abs(Fo - this.K * Fc);
             sumwFoSq += Math.abs(this.statWhkl.get(i) * Math.pow(Fo, 2));
             sumwFomFcSq += Math.abs(this.statWhkl.get(i) * Math.pow(Fo - Fc, 2));
-            if (Fc < Fo)  {
-                sumFomFc_cond += Math.abs(Fc - Fo);
-                sumFo_cond += Fo;
-            }
+            sumFomFc_cond += (Fc < Fo) ? Math.abs(Fc - Fo) : 0.0;
+            sumFo_cond += Fo;
             sumFomFc += Math.abs(Fc - Fo);
             sumFo += Fo;
             sumFoFc += this.statWhkl.get(i) * Fo * Fc;
@@ -297,6 +295,10 @@ public class Energy {
 
         if (this.OPT.contains("Xr4")) {
             partExray = sumwFomFcSq;
+        }
+
+        if (this.OPT.contains("Xr5")) {
+            partExray = sumFomFc_cond;
         }
 
         if (this.OPT.contains("Pa")) {

@@ -221,10 +221,10 @@ public class UnitCell implements Serializable {
 
 
     /**
-     * This methos is used for calculation of Scattering vector: S = 1 / (2 * d) = sin(theta) / lambda;
+     * This method is used for calculation of Scattering vector: S = 1 / (2 * d) = sin(theta) / lambda;
      *
      * @param hkl
-     * @return
+     * @return S = sin(theta) / lambda
      */
     public double calcScatVect(ReciprocalItem hkl) {
         return calcScatVect(hkl.h, hkl.k, hkl.l);

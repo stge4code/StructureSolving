@@ -169,7 +169,7 @@ public class FragmentData implements Serializable {
             for (Atom itemAtom : itemFrag.getFragAtoms()) {
                 ++numC;
                 if (!aTypeCounter.contains(itemAtom.getAtomName())) aTypeCounter.add(itemAtom.getAtomName());
-                output.add(String.format("%s  %d  % .5f  % .5f  % .5f 1%.4f %.3f",
+                output.add(String.format("%-4s  %d  % .5f  % .5f  % .5f 1%.4f %.3f",
                         generateAtomNum(itemAtom.getAtomName(), numC),
                         aTypeCounter.indexOf(itemAtom.getAtomName()) + 1,
                         itemAtom.getAtomX(),
@@ -206,7 +206,7 @@ public class FragmentData implements Serializable {
                     double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
                     if (!aTypeCounter.contains(itemAtom.getAtomName()))
                         aTypeCounter.add(itemAtom.getAtomName());
-                    output.add(String.format("%s  %d  % .5f  % .5f  % .5f 1%.4f %.3f",
+                    output.add(String.format("%-4s  %d  % .5f  % .5f  % .5f 1%.4f %.3f",
                             generateAtomNum(itemAtom.getAtomName(), numC),
                             aTypeCounter.indexOf(itemAtom.getAtomName()) + 1,
                             VECT[0],

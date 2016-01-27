@@ -62,9 +62,11 @@ public class MoRmodule {
         private double Delta2 = 0;
         private double Delta = 0;
         private double Delta1 = 0;
+        private int N_TMIN = 100;
         private int FIRST_RANDOMIZATION = 0;
         private int MINIMA_SEARCH_METHOD = 0;
         private String SAVE_BEST_RESULT = "N";
+        private int G_FIND_DERIVATIVE = 3;
         private int PRINT_FRAGMENT = 0;
         private String Eopt = "";
         private double wExray = -1.0;
@@ -88,7 +90,8 @@ public class MoRmodule {
                             this.REFRESH = Integer.parseInt(allMatches.get(1));
                             break;
                         case "n":
-                            this.n = Integer.parseInt(allMatches.get(1));
+                            int tmp = Integer.parseInt(allMatches.get(1));
+                            this.n = (tmp > 99) ? 99 : tmp;
                             break;
                         case "h":
                             this.h = Double.valueOf(allMatches.get(1)).doubleValue();
@@ -104,6 +107,9 @@ public class MoRmodule {
                             break;
                         case "Epsilon2":
                             this.Epsilon2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "N_TMIN":
+                            this.N_TMIN = Integer.parseInt(allMatches.get(1));
                             break;
                         case "Epsilon1":
                             this.Epsilon1 = Double.valueOf(allMatches.get(1)).doubleValue();
@@ -136,6 +142,9 @@ public class MoRmodule {
                             break;
                         case "FIRST_RANDOMIZATION":
                             this.FIRST_RANDOMIZATION = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "G_FIND_DERIVATIVE":
+                            this.G_FIND_DERIVATIVE = Integer.parseInt(allMatches.get(1));
                             break;
                         case "MINIMA_SEARCH_METHOD":
                             this.MINIMA_SEARCH_METHOD = Integer.parseInt(allMatches.get(1));
@@ -185,6 +194,7 @@ public class MoRmodule {
 
     public double findt(FragmentData FRAG, Energy E, double[] g) {
         double t = this.MORSETTINGS.Delta1;
+        int counter = this.MORSETTINGS.N_TMIN;
         E.calcEnergy(FRAG);
         double E0t = E.E;
         double E1t = 0;
@@ -214,7 +224,10 @@ public class MoRmodule {
             } else {
                 t /= 2.0;
             }
-            if (t == 0) break;
+            counter--;
+            if (counter == 0) {
+                return this.MORSETTINGS.Delta1;
+            }
         } while (true);
         return t;
     }
@@ -264,7 +277,7 @@ public class MoRmodule {
         double E1 = E.E;
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(-dt, g));
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(-t, g));
-        return (E1 - E0) / dt / 2;
+        return (E1 - E0) / dt / 2.0;
     }
 
 
@@ -324,7 +337,7 @@ public class MoRmodule {
         double tmin = findt(FRAG, E, g);
         if (tmin == 0) return;
         if (mode == 1) {
-            double Phi = (1 + Math.sqrt(5)) / 2;
+            double Phi = (1 + Math.sqrt(5)) / 2.0;
             double l = 0;
             double r = tmin;
             double[] tV = {l + (r - l) / (Phi + 1), r - (r - l) / (Phi + 1)};
@@ -423,7 +436,7 @@ public class MoRmodule {
         double[] dE = new double[this.ParametersList.length];
         double dx = this.MORSETTINGS.c3;
         for (int i = 0; i < this.ParametersList.length; i++) {
-            dE[i] = partialDerivative(FRAG, E, dx, i, 3);
+            dE[i] = partialDerivative(FRAG, E, dx, i, this.MORSETTINGS.G_FIND_DERIVATIVE);
         }
         double[] g = FastMath.KmV(-1.0, dE);
         double mdE = FastMath.modV(dE);
@@ -442,10 +455,10 @@ public class MoRmodule {
             addToParameters(CELL, FRAG, ParametersList, i, +dx);
             E.calcEnergy(FRAG);
             double E1 = E.E;
-            //addToParameters(CELL, FRAG, ParametersList, i, +dx);
+            addToParameters(CELL, FRAG, ParametersList, i, +dx);
 //            E.calcEnergy(FRAG);
 //            double E2 = E.E;
-            addToParameters(CELL, FRAG, ParametersList, i, +2.0 * dx);
+            addToParameters(CELL, FRAG, ParametersList, i, +dx);
             E.calcEnergy(FRAG);
             double E3 = E.E;
             addToParameters(CELL, FRAG, ParametersList, i, +dx);
@@ -489,10 +502,10 @@ public class MoRmodule {
             double E1c = E.Ecore;
             double E1p = E.Epenalty;
             addToParameters(CELL, FRAG, ParametersList, i, -dx);
-            dEx[i] = (E1x - E0x) / dx / 2;
-            dEr[i] = (E1r - E0r) / dx / 2;
-            dEc[i] = (E1c - E0c) / dx / 2;
-            dEp[i] = (E1p - E0p) / dx / 2;
+            dEx[i] = (E1x - E0x) / dx / 2.0;
+            dEr[i] = (E1r - E0r) / dx / 2.0;
+            dEc[i] = (E1c - E0c) / dx / 2.0;
+            dEp[i] = (E1p - E0p) / dx / 2.0;
         }
         ModsG[0] = Math.pow(FastMath.modV(dEx), 2);
         ModsG[1] = Math.pow(FastMath.modV(dEr), 2);

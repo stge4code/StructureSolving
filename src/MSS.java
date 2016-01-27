@@ -10,7 +10,7 @@ public class MSS {
     public static void main(String[] args){
         Locale.setDefault(new Locale("en", "US"));
 
-        String FULLPATH = args[0];
+        String FULLPATH = ((args[0]).charAt(args[0].length() - 1) == '\\') ? args[0] : args[0] + '\\';
         String NAME = args[1];
         String METHOD = args[2];
 

@@ -92,9 +92,8 @@ public class Atom implements java.io.Serializable {
     }
 
     public double atomScattering(double scatVectSq) {
-        //double scatVectSq = Math.pow(cell.calcScatVect(hkl), 2);
         double sumExps = this.atomScat[8];
-        for (int i = 0; i < 4; i += 2) {
+        for (int i = 0; i < 7; i += 2) {
             sumExps += this.atomScat[i] * Math.exp(-this.atomScat[i + 1] * scatVectSq);
         }
         return sumExps;
