@@ -223,28 +223,6 @@ public class FragmentData implements Serializable {
     }
 
 
-    public void printFragParameters(String fragParametersPrintListFilename, int fragNum, String additionalString) {
-        List<String> output = new ArrayList<>();
-        int indexFrag = 0;
-        for (Fragment itemFrag : this.fragMass) {
-            if (itemFrag.getFragNum() == fragNum) {
-                indexFrag = this.fragMass.indexOf(itemFrag);
-                break;
-            }
-        }
-        output.add(String.format("%s % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f",
-                additionalString,
-                this.getFragMass().get(indexFrag).getFragX(),
-                this.getFragMass().get(indexFrag).getFragY(),
-                this.getFragMass().get(indexFrag).getFragZ(),
-                this.getFragMass().get(indexFrag).getFragPhi1(),
-                this.getFragMass().get(indexFrag).getFragPhi2(),
-                this.getFragMass().get(indexFrag).getFragTheta(),
-                this.getFragMass().get(indexFrag).getFragO(),
-                this.getFragMass().get(indexFrag).getFragU()));
-        ObjectsUtilities.putContentToFile(fragParametersPrintListFilename, output, true);
-    }
-
     public void fragsParametersAdjustment() {
         for (Fragment itemFrag : this.fragMass) {
             itemFrag.fragParametersToOrder();

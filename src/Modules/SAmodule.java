@@ -415,6 +415,55 @@ public class SAmodule {
     }
 
 
+    public void printTempInfo(FragmentData FRAG, Energy E, int loop, String regime){
+        List<String> output = new ArrayList<>();
+        if(regime.equals("")) {
+            output.add(String.format("%5s %4s %12s %6s %6s %6s %6s %7s %7s %7s %7s %7s %7s %7s %7s",
+                    "#",
+                    "TYPE",
+                    "Ecore",
+                    "RI",
+                    "RII",
+                    "RIII",
+                    "RIV",
+                    "X",
+                    "Y",
+                    "Z",
+                    "Phi1",
+                    "Phi2",
+                    "Theta",
+                    "O",
+                    "U"));
+        } else {
+            Fragment frag = null;
+            for (Fragment itemFrag : FRAG.getFragMass()) {
+                if (itemFrag.getFragNum() == this.SASETTINGS.PRINT_FRAGMENT) {
+                    frag = itemFrag;
+                    break;
+                }
+            }
+            output.add(String.format("%5d %4s %8e %6.3f %6.3f %6.3f %6.3f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f",
+                    loop,
+                    regime,
+                    E.Ecore,
+                    E.RI,
+                    E.RII,
+                    E.RIII,
+                    E.RIV,
+                    frag.getFragX(),
+                    frag.getFragY(),
+                    frag.getFragZ(),
+                    frag.getFragPhi1(),
+                    frag.getFragPhi2(),
+                    frag.getFragTheta(),
+                    frag.getFragO(),
+                    frag.getFragU()));
+        }
+        ObjectsUtilities.putContentToFile(this.tempFileName, output, true);
+    }
+
+
+
     public void run() {
 
         List<Double> statE = new ArrayList<>();
@@ -494,6 +543,8 @@ public class SAmodule {
         FragmentData FRAG_II = (FragmentData) deepClone(FRAG);
         Iterator<TemperatureItem> iterCYCLE = this.TEMPREGIME.getREGIME().iterator();
 
+        if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
+
         while (iterCYCLE.hasNext()) {
             TemperatureItem itemTemperatureItem = iterCYCLE.next();
 
@@ -521,6 +572,8 @@ public class SAmodule {
             statK.add(E.K);
             minE = statE.get(statE.indexOf(Collections.min(statE)));
             minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
+
+
 
 
             for (int iteration = 0; iteration < itemTemperatureItem.cycleIterations; iteration++) {
@@ -614,8 +667,7 @@ public class SAmodule {
                             FRAG_II = null;
                             FRAG_II = (FragmentData) deepClone(FRAG_I);
                             numDecreases++;
-                            if (this.SASETTINGS.PRINT_FRAGMENT != 0)
-                                FRAG_I.printFragParameters(this.tempFileName, this.SASETTINGS.PRINT_FRAGMENT, String.format("%-5.2f", E.RII));
+                            if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "*");
                         }
                     } else {
                         if (itemTemperatureItem.cycleOpt.contains("J")) {
@@ -624,8 +676,7 @@ public class SAmodule {
                                 FRAG_II = null;
                                 FRAG_II = (FragmentData) deepClone(FRAG_I);
                                 numJumps++;
-                                if (this.SASETTINGS.PRINT_FRAGMENT != 0)
-                                    FRAG_I.printFragParameters(this.tempFileName, this.SASETTINGS.PRINT_FRAGMENT, String.format("%-5.2f", E.RII));
+                                if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "*");
                             }
 
                         }

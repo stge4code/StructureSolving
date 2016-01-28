@@ -552,6 +552,54 @@ public class MoRmodule {
         addToParameters(CELL, FRAG, ParametersList, FastMath.KmV(h, rho));
     }
 
+    public void printTempInfo(FragmentData FRAG, Energy E, int loop, String regime){
+        List<String> output = new ArrayList<>();
+        if(regime.equals("")) {
+            output.add(String.format("%5s %4s %12s %6s %6s %6s %6s %7s %7s %7s %7s %7s %7s %7s %7s",
+                    "#",
+                    "TYPE",
+                    "Ecore",
+                    "RI",
+                    "RII",
+                    "RIII",
+                    "RIV",
+                    "X",
+                    "Y",
+                    "Z",
+                    "Phi1",
+                    "Phi2",
+                    "Theta",
+                    "O",
+                    "U"));
+        } else {
+            Fragment frag = null;
+            for (Fragment itemFrag : FRAG.getFragMass()) {
+                if (itemFrag.getFragNum() == this.MORSETTINGS.PRINT_FRAGMENT) {
+                    frag = itemFrag;
+                    break;
+                }
+            }
+            output.add(String.format("%5d %4s %8e %6.3f %6.3f %6.3f %6.3f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f % 6.4f",
+                    loop,
+                    regime,
+                    E.Ecore,
+                    E.RI,
+                    E.RII,
+                    E.RIII,
+                    E.RIV,
+                    frag.getFragX(),
+                    frag.getFragY(),
+                    frag.getFragZ(),
+                    frag.getFragPhi1(),
+                    frag.getFragPhi2(),
+                    frag.getFragTheta(),
+                    frag.getFragO(),
+                    frag.getFragU()));
+        }
+        ObjectsUtilities.putContentToFile(this.tempFileName, output, true);
+    }
+
+
     public void run() {
 
         List<Double> statE = new ArrayList<>();
@@ -646,6 +694,8 @@ public class MoRmodule {
         FragmentData FRAG_II = (FragmentData) deepClone(FRAG);
         //FragmentData FRAG_III = (FragmentData) deepClone(FRAG);
 
+        if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
+
         for (int i = 0; i < MORSETTINGS.N; i++) {
 
             //FRAG_I.fragsParametersAdjustment();
@@ -662,11 +712,7 @@ public class MoRmodule {
 
             gradientDec(FRAG_I, E, Delta);
             E.calcEnergy(FRAG_I);
-            if (this.MORSETTINGS.PRINT_FRAGMENT != 0)
-                FRAG_I.printFragParameters(this.tempFileName,
-                        this.MORSETTINGS.PRINT_FRAGMENT,
-                        String.format("% .3e ", E.E) + "D " + String.format("%-5.2f", E.RII));
-
+            if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, i + 1, "D");
             //E.calcEnergy(FRAG_I);
             statE.add(E.E);
             statEcore.add(E.Ecore);
@@ -707,10 +753,7 @@ public class MoRmodule {
             FRAG_II = (FragmentData) deepClone(FRAG_I);
             jumpRaviness(FRAG_I, rho, h);
             E.calcEnergy(FRAG_I);
-            if (this.MORSETTINGS.PRINT_FRAGMENT != 0)
-                FRAG_I.printFragParameters(this.tempFileName,
-                        this.MORSETTINGS.PRINT_FRAGMENT,
-                        String.format("% .3e ", E.E) + "J " + String.format("%-5.2f", E.RII));
+            if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, i + 1, "J");
 
             strSTATUS.setLength(0);
             strSTATUS.append("Iteration number  ");

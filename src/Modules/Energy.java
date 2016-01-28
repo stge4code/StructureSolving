@@ -287,7 +287,7 @@ public class Energy {
 
     public void printInfo() {
         List<String> output = new ArrayList<>();
-        output.add(String.format("%4s %4s %4s %8s %8s %8s %8s %8s",
+        output.add(String.format("%4s %4s %4s %14s %14s %14s %14s %14s",
                 "h",
                 "k",
                 "l",
@@ -299,7 +299,7 @@ public class Energy {
         for (int i = 0; i < this.HKL.getHKL().size(); i++) {
             ReciprocalItem itemHKL = this.HKL.getHKL().get(i);
             ComplexNumber itemFc = this.statFc.get(i);
-            output.add(String.format("%4d %4d %4d %8g %8g %8g %8g %8g",
+            output.add(String.format("%4d %4d %4d % .7e % .7e % .7e % .7e % .7e",
                     itemHKL.h,
                     itemHKL.k,
                     itemHKL.l,
