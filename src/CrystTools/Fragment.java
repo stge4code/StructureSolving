@@ -1,5 +1,6 @@
 package CrystTools;
 
+import MathTools.ComplexNumber;
 import MathTools.FastMath;
 import MathTools.SpecialFunction;
 
@@ -13,22 +14,23 @@ import static Utilities.ObjectsUtilities.deepClone;
  * Created by Developer on 10.09.2015.
  */
 public class Fragment implements Serializable {
-    private int fragNum = 0;
-    private double fragO = 0;
-    private double fragU = 0;
-    private  double fragMass = 0;
-    private String fragScatType = "";
-    private String fragOPT = "";
+    private int fragNum;
+    private double fragO;
+    private double fragU;
+    private double fragWeight;
+    private double fragDiameter;
+    private String fragScatType;
+    private String fragOPT;
 
-    private String fragName = "";
+    private String fragName;
 
-    private Double fragX = Double.valueOf(0);
-    private Double fragY = Double.valueOf(0);
-    private Double fragZ = Double.valueOf(0);
+    private Double fragX = Double.valueOf(0.0);
+    private Double fragY = Double.valueOf(0.0);
+    private Double fragZ = Double.valueOf(0.0);
 
-    private Double fragPhi1 = Double.valueOf(0);
-    private Double fragPhi2 = Double.valueOf(0);
-    private Double fragTheta = Double.valueOf(0);
+    private Double fragPhi1 = Double.valueOf(0.0);
+    private Double fragPhi2 = Double.valueOf(0.0);
+    private Double fragTheta = Double.valueOf(0.0);
 
     private List<Atom> fragAtoms = new ArrayList<>();
     private List<Atom> fragAtomsSource = new ArrayList<>();
@@ -151,30 +153,30 @@ public class Fragment implements Serializable {
         this.fragU = fragU;
         this.fragScatType = fragScatType;
         this.fragOPT = fragOPT;
-        fragFindMass();
+        fragFindWeight();
         fragFindCenter(1);
         fragGenerateAtomsSource();
     }
 
-    public void fragFindMass() {
-        double fragMass = 0;
+    public void fragFindWeight() {
+        double fragWeight = 0;
         for (Atom itemAtom : this.fragAtoms) {
-            fragMass += itemAtom.getAtomM();
+            fragWeight += itemAtom.getAtomM();
         }
-        this.fragMass = fragMass;
+        this.fragWeight = fragWeight;
     }
 
     public void fragFindCenter(int mode) {
         if (mode == 1) {
-            double[] VECT = {0, 0, 0};
+            double[] VECT = {0.0, 0.0, 0.0};
             for (Atom itemAtom : this.fragAtoms) {
-                VECT[0] += itemAtom.getAtomX() * itemAtom.getAtomM() / this.fragMass;
-                VECT[1] += itemAtom.getAtomY() * itemAtom.getAtomM() / this.fragMass;
-                VECT[2] += itemAtom.getAtomZ() * itemAtom.getAtomM() / this.fragMass;
+                VECT[0] += itemAtom.getAtomX() * itemAtom.getAtomM();
+                VECT[1] += itemAtom.getAtomY() * itemAtom.getAtomM();
+                VECT[2] += itemAtom.getAtomZ() * itemAtom.getAtomM();
             }
-            this.fragX = VECT[0];
-            this.fragY = VECT[1];
-            this.fragZ = VECT[2];
+            this.fragX = VECT[0] / this.fragWeight;
+            this.fragY = VECT[1] / this.fragWeight;
+            this.fragZ = VECT[2] / this.fragWeight;
         } else if (mode == 2) {
             double[] VECT = {0, 0, 0};
             double atomsNum = this.fragAtoms.size();
@@ -195,9 +197,9 @@ public class Fragment implements Serializable {
         this.fragAtomsSource = (ArrayList<Atom>) deepClone(fragAtoms);
         double[] VECT = {0, 0, 0};
         for (Atom itemAtom : this.fragAtomsSource) {
-            VECT[0] += itemAtom.getAtomX() * itemAtom.getAtomM() / this.fragMass;
-            VECT[1] += itemAtom.getAtomY() * itemAtom.getAtomM() / this.fragMass;
-            VECT[2] += itemAtom.getAtomZ() * itemAtom.getAtomM() / this.fragMass;
+            VECT[0] += itemAtom.getAtomX() * itemAtom.getAtomM() / this.fragWeight;
+            VECT[1] += itemAtom.getAtomY() * itemAtom.getAtomM() / this.fragWeight;
+            VECT[2] += itemAtom.getAtomZ() * itemAtom.getAtomM() / this.fragWeight;
         }
         for (Atom itemAtom : this.fragAtomsSource) {
             itemAtom.setAtomX(itemAtom.getAtomX() - VECT[0]);
@@ -309,24 +311,25 @@ public class Fragment implements Serializable {
     }
 
 
-    public double[] fragScattering(ReciprocalItem hkl, UnitCell cell, Symmetry sym) {
+    public ComplexNumber fragScattering(ReciprocalItem hkl, UnitCell cell, Symmetry sym) {
         return fragScattering(hkl, cell, sym, this.fragO, this.fragScatType);
     }
 
-    public double[] fragScattering(ReciprocalItem HKL,
-                                   UnitCell CELL,
-                                   Symmetry SYM,
-                                   double fragOccupancy,
-                                   String scatType) {
+    public ComplexNumber fragScattering(ReciprocalItem HKL,
+                                        UnitCell CELL,
+                                        Symmetry SYM,
+                                        double fragOccupancy,
+                                        String scatType) {
         double[] Fhkl = {0.0, 0.0};
         double atomScattering = 0;
         double argPhase = 0;
         double ScatVect = HKL.scatvect;
         double ScatVectSq = Math.pow(HKL.scatvect, 2);
         double Debye_Coefficient = Math.exp(-8.0 * Math.pow(Math.PI, 2) * this.fragU * ScatVectSq);
+        this.fragDiameter = (this.fragDiameter == 0) ? fragDiameter(CELL) : this.fragDiameter;
+        double D = this.fragDiameter;
         if (scatType.contains("F1b")) {
             atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);
-            double D = fragDiameter(CELL);
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
             for (SymmetryItem itemSYM : SYM.getSymMass()) {
                 double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
@@ -343,7 +346,6 @@ public class Fragment implements Serializable {
             Fhkl[1] *= 60 * atomScattering * BessScat;
         } else  if (scatType.contains("F1s")) {
             atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);
-            double D = fragDiameter(CELL);
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
             for (SymmetryItem itemSYM : SYM.getSymMass()) {
                 double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
@@ -378,7 +380,7 @@ public class Fragment implements Serializable {
             Fhkl[0] *= fragOccupancy * Debye_Coefficient;
             Fhkl[1] *= fragOccupancy * Debye_Coefficient;
         }
-        return Fhkl;
+        return new ComplexNumber(Fhkl);
     }
 
     public double fragDiameter(UnitCell CELL) {

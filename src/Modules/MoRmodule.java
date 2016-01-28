@@ -49,7 +49,7 @@ public class MoRmodule {
 
     public class RavinessSettings {
 
-        private String ravinessSettingsFilename = "";
+        private String ravinessSettingsFilename;
         private int N = 0;
         private int REFRESH = 0;
         private double h = 0;
@@ -73,9 +73,9 @@ public class MoRmodule {
         private double wEcore = -1.0;
 
         //----------------------------------------------------------------------------------------------------------------------
-        public RavinessSettings(String ravinessDataFilename) {
+        private RavinessSettings(String ravinessDataFilename) {
             this.ravinessSettingsFilename = ravinessDataFilename;
-            List<String> input = ObjectsUtilities.getContentFromFile(ravinessDataFilename);
+            List<String> input = ObjectsUtilities.getContentFromFile(this.ravinessSettingsFilename);
             for (String s : input) {
                 try {
                     Pattern p = Pattern.compile("(\\S+)");
@@ -601,6 +601,7 @@ public class MoRmodule {
         if (this.ParametersList.length == 0) {
             E.OPT = MORSETTINGS.Eopt;
             E.calcEnergy(FRAG);
+            E.printInfo();
             strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (S) - RI", E.RI));
             strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (C) - RII", E.RII));
             strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (W) - RIII", E.RIII));
@@ -681,6 +682,7 @@ public class MoRmodule {
                 strIND.append(String.format(" RIV=%-4.2f", E.RIV));
                 FRAG = (FragmentData) deepClone(FRAG_I);
                 FRAG.printFrags();
+                E.printInfo();
                 if (!this.resultFileName.equals("") && this.MORSETTINGS.SAVE_BEST_RESULT.contains("Y")) try {
                     saveObject(FRAG, this.resultFileName);
                 } catch (IOException e) {

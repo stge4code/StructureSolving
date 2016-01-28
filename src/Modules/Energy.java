@@ -2,7 +2,9 @@ package Modules;
 
 
 import CrystTools.*;
+import MathTools.ComplexNumber;
 import MathTools.FastMath;
+import Utilities.ObjectsUtilities;
 import org.w3c.dom.DOMImplementation;
 
 import java.math.BigDecimal;
@@ -10,6 +12,8 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by Developer on 11.09.2015.
@@ -31,9 +35,52 @@ public class Energy {
     public double RII;
     public double RIII;
     public double RIV;
+    public List<ComplexNumber> statFc = new ArrayList<>();
     private PenaltyFunction PSI;
     private List<Double> statWhkl = new ArrayList<>();
-    private List<Double> statFc = new ArrayList<>();
+    private String infoFileName;
+    private EnergySettings ENERGYSETTINGS;
+
+    private class EnergySettings {
+
+        private String energySettingsFilename;
+        private int WEIGHT_SCHEME = 0;
+        private double A2 = 28.0;
+        private double B2 = 14.0;
+        private double K2 = 1.0;
+
+        public EnergySettings(String energyDataFilename) {
+            this.energySettingsFilename = energyDataFilename;
+            List<String> input = ObjectsUtilities.getContentFromFile(this.energySettingsFilename);
+            for (String s : input) {
+                try {
+                    Pattern p = Pattern.compile("(\\S+)");
+                    Matcher m = p.matcher(s);
+                    List<String> allMatches = new ArrayList<String>();
+                    while (m.find()) allMatches.add(m.group());
+                    switch (allMatches.get(0)) {
+                        case "WEIGHT_SCHEME":
+                            this.WEIGHT_SCHEME = Integer.parseInt(allMatches.get(1));
+                            break;
+                        case "A2":
+                            this.A2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "B2":
+                            this.B2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "K2":
+                            this.K2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        default:
+                            break;
+                    }
+                    allMatches.clear();
+                } catch (NumberFormatException e) {
+                    //throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 
 
     public class aPair {
@@ -45,6 +92,7 @@ public class Energy {
         public double Zj = 0;
         public double DVdW = 0;
         public double R = 0;
+
         public aPair(double xi, double yi, double zi, double xj, double yj, double zj, double R, double DVdW) {
             Xi = xi;
             Yi = yi;
@@ -58,7 +106,14 @@ public class Energy {
     }
 
 
-    public Energy(DiffractionData HKL, UnitCell CELL, Symmetry SYM, PenaltyFunction PSI) {
+    public Energy(DiffractionData HKL,
+                  UnitCell CELL,
+                  Symmetry SYM,
+                  PenaltyFunction PSI,
+                  String energySettingsFilename,
+                  String infoFilename) {
+        this.ENERGYSETTINGS = new EnergySettings(energySettingsFilename);
+        this.infoFileName = infoFilename;
         this.HKL = HKL;
         this.CELL = CELL;
         this.SYM = SYM;
@@ -71,20 +126,20 @@ public class Energy {
         this.wExray = 1.0;
         this.wEcore = 1.0;
         this.K = 1.0;
-        this.RI = 0;
-        this.RII = 0;
-        this.RIII = 0;
-        this.RIV = 0;
-        calcwHKL(0);
+        this.RI = 0.0;
+        this.RII = 0.0;
+        this.RIII = 0.0;
+        this.RIV = 0.0;
+        calcwHKL();
     }
 
-    public boolean ifInCell(double x, double y, double z){
+    public boolean ifInCell(double x, double y, double z) {
         boolean condition = (x <= 1) && (x >= 0) && (y <= 1) && (y >= 0) && (z <= 1) && (z >= 0);
         if (condition) return true;
         return false;
     }
 
-    public double restrainFunction(FragmentData FRAG){
+    public double restrainFunction1(FragmentData FRAG) {
         List<aPair> aPairs = genAtomsPairs(this.SYM, FRAG);
         double restrain = 0;
 //        double c = 1;
@@ -93,13 +148,12 @@ public class Energy {
 //              if ((R != 0) && (R < itemApair.RVdW))
 //                  partErest += Math.pow(Math.pow(c * RVdW, n) - Math.pow(R, n), m);
         for (aPair itemApair : aPairs) {
-            if((itemApair.R != 0) && (itemApair.R < itemApair.DVdW)) {
+            if ((itemApair.R != 0) && (itemApair.R < itemApair.DVdW)) {
                 restrain += Math.pow(Math.min(itemApair.R - itemApair.DVdW, 0), 2);
             }
         }
-            return restrain;
+        return restrain;
     }
-
 
 
     public List<aPair> genAtomsPairs(Symmetry SYM, FragmentData FRAG) {
@@ -128,9 +182,9 @@ public class Energy {
                                                                 imAtom_j.getAtomZ()
                                                         }));
                                 double[] VECT_it = VECT_i;
-                                for (int tX = -1; tX < 2; tX++){
-                                    for (int tY = -1; tY < 2; tY++){
-                                        for (int tZ = -1; tZ < 2; tZ++){
+                                for (int tX = -1; tX < 2; tX++) {
+                                    for (int tY = -1; tY < 2; tY++) {
+                                        for (int tZ = -1; tZ < 2; tZ++) {
                                             double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
                                             if (ifInCell(
                                                     (VECT_jt[0] + VECT_it[0]) / 2.0,
@@ -153,7 +207,8 @@ public class Energy {
 
         return result;
     }
-    public void calcwHKL(int mode){
+
+    public void calcwHKL() {
         double FoMin = this.HKL.getHKL().get(0).Fsq;
         double FoMax = 0;
         double wHKL = 0;
@@ -161,17 +216,23 @@ public class Energy {
             FoMin = Math.min(FoMin, itemHKL.Fsq);
             FoMax = Math.max(FoMax, itemHKL.Fsq);
         }
-        double A = 2.0 * FoMin;
-        double C = 2.0 / FoMax;
+        double A0 = 2.0 * FoMin;
+        double C0 = 2.0 / FoMax;
+        double A2 = this.ENERGYSETTINGS.A2;
+        double B2 = this.ENERGYSETTINGS.B2;
+        double K2 = this.ENERGYSETTINGS.K2;
         for (ReciprocalItem itemHKL : this.HKL.getHKL()) {
-            switch (mode) {
+            switch (this.ENERGYSETTINGS.WEIGHT_SCHEME) {
                 case 0:
-                    wHKL = 1.0 / (A + itemHKL.Fsq + C * Math.pow(itemHKL.Fsq, 2));
+                    wHKL = 1.0 / (A0 + itemHKL.Fsq + C0 * Math.pow(itemHKL.Fsq, 2));
                     break;
                 case 1:
                     wHKL = 1.0 / Math.pow(itemHKL.Fsq, 2);
                     break;
                 case 2:
+                    wHKL = 1.0 / (1 + Math.pow((K2 * itemHKL.Fsq - A2) / B2, 2));
+                    break;
+                case 3:
                     wHKL = 1.0;
                     break;
                 default:
@@ -182,13 +243,13 @@ public class Energy {
     }
 
 
-    public double PattersonFunction(double[] UVW){
+    public double PattersonFunction(double[] UVW) {
         double V0 = this.CELL.getV();
         double sumPatt = 0;
         for (ReciprocalItem itemHKL : this.HKL.getHKL()) {
-            sumPatt += itemHKL.Fsq * Math.cos(2 * Math.PI * ( itemHKL.h * UVW[0] + itemHKL.k * UVW[1] + itemHKL.l * UVW[2] ) );
+            sumPatt += itemHKL.Fsq * Math.cos(2 * Math.PI * (itemHKL.h * UVW[0] + itemHKL.k * UVW[1] + itemHKL.l * UVW[2]));
         }
-        return  sumPatt / V0;
+        return sumPatt / V0;
     }
 
     public double PattersonEnergy(Symmetry SYM, FragmentData FRAG) {
@@ -221,12 +282,38 @@ public class Energy {
                 }
             }
         }
-        return  patt_E;
+        return patt_E;
+    }
+
+    public void printInfo() {
+        List<String> output = new ArrayList<>();
+        output.add(String.format("%4s %4s %4s %8s %8s %8s %8s %8s",
+                "h",
+                "k",
+                "l",
+                "SCATVECT",
+                "Fo",
+                "Fo/K",
+                "Mod(Fc)",
+                "Arg(Fc)"));
+        for (int i = 0; i < this.HKL.getHKL().size(); i++) {
+            ReciprocalItem itemHKL = this.HKL.getHKL().get(i);
+            ComplexNumber itemFc = this.statFc.get(i);
+            output.add(String.format("%4d %4d %4d %8g %8g %8g %8g %8g",
+                    itemHKL.h,
+                    itemHKL.k,
+                    itemHKL.l,
+                    FastMath.round(itemHKL.scatvect, 8),
+                    FastMath.round(Math.sqrt(itemHKL.Fsq), 8),
+                    FastMath.round(Math.sqrt(itemHKL.Fsq) / this.K, 8),
+                    FastMath.round(itemFc.getModule(), 8),
+                    FastMath.round(itemFc.getPhase(), 8)));
+        }
+        ObjectsUtilities.putContentToFile(this.infoFileName, output);
     }
 
 
-
-    public void calcEnergy(FragmentData FRAG){
+    public void calcEnergy(FragmentData FRAG) {
         /**
          * Calaculate Energy function value plus penalty function value.
          *
@@ -254,13 +341,14 @@ public class Energy {
         double sumFcRe = 0;
         double Fo = 0;
         double sumFomFcwK = 0;
+        this.statFc.clear();
 
         for (int i = 0; i < this.HKL.getHKL().size(); i++) {
             sumFcIm = sumFcRe = 0;
             for (Fragment itemFrag : FRAG.getFragMass()) {
-                double[] fScat = itemFrag.fragScattering(this.HKL.getHKL().get(i), this.CELL, this.SYM);
-                sumFcRe +=  fScat[0];
-                sumFcIm +=  fScat[1];
+                ComplexNumber fScat = itemFrag.fragScattering(this.HKL.getHKL().get(i), this.CELL, this.SYM);
+                sumFcRe += fScat.getRe();
+                sumFcIm += fScat.getIm();
             }
             Fc = Math.sqrt(Math.pow(sumFcIm, 2) + Math.pow(sumFcRe, 2));
             Fo = Math.sqrt(this.HKL.getHKL().get(i).Fsq);
@@ -275,6 +363,7 @@ public class Energy {
             sumFcFc += this.statWhkl.get(i) * Math.pow(Fc, 2);
             Na += this.statWhkl.get(i) * Math.abs(this.HKL.getHKL().get(i).Fsq);
             sumFomFcwK = this.statWhkl.get(i) * Math.pow(Fo - this.K * Fc, 2);
+            this.statFc.add(new ComplexNumber(sumFcRe, sumFcIm));
 
         }
         this.K = sumFoFc / sumFcFc;
@@ -307,8 +396,8 @@ public class Energy {
 
         this.Exray = partExray;
 
-        if (this.OPT.contains("Re")) {
-            partErest += restrainFunction(FRAG);
+        if (this.OPT.contains("Re1")) {
+            partErest += restrainFunction1(FRAG);
         }
         this.Erest = partErest;
         this.Epenalty = this.PSI.Psi1(FRAG);

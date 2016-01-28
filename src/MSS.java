@@ -32,13 +32,20 @@ public class MSS {
         DiffractionData HKL = new DiffractionData(
                 CELL,
                 FULLPATH + NAME + ".HKL",
-                FULLPATH + NAME + ".HKLS");
-        HKL.PrintHKL(FULLPATH + "_" + NAME + ".HKL");
+                FULLPATH + NAME + ".HKLS",
+                FULLPATH + "_" + NAME + ".HKL");
+        HKL.printHKL();
 
         PenaltyFunction PSI = new PenaltyFunction(
                 FULLPATH + NAME + ".PNLT");
 
-        Energy E = new Energy(HKL, CELL, SYM, PSI);
+        Energy E = new Energy(
+                HKL,
+                CELL,
+                SYM,
+                PSI,
+                FULLPATH + NAME + ".ENGS",
+                FULLPATH  + "_" +  NAME + ".INFO");
         //System.out.print(CELL.calcDistance(0, 0, 2));
 
         if (METHOD.equals("SA")) {

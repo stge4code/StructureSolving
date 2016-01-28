@@ -35,87 +35,87 @@ public class Symmetry {
         this.symFileName = symFileName;
         List<String> input = ObjectsUtilities.getContentFromFile(this.symFileName);
         for (String s : input) {
-                    if(s.indexOf("LATT")!= -1) {
-                        this.LATT = Integer.parseInt(s.substring(4).replaceAll("\\s+", ""));
+            if(s.indexOf("LATT")!= -1) {
+                this.LATT = Integer.parseInt(s.substring(4).replaceAll("\\s+", ""));
+            }
+
+            if(s.indexOf("SYMM")!= -1) {
+                try {
+
+                    List<String> allMatches = new ArrayList<String>();
+                    Matcher m = Pattern.compile("[^,]+").matcher(s.substring(4).replaceAll("\\s+", ""));
+                    while (m.find()) {
+                        allMatches.add(m.group());
                     }
 
-                    if(s.indexOf("SYMM")!= -1) {
-                        try {
+                    double[][] SYMr = new double[3][3];
+                    double[] SYMt = new double[3];
+                    String sTemp = "";
 
-                            List<String> allMatches = new ArrayList<String>();
-                            Matcher m = Pattern.compile("[^,]+").matcher(s.substring(4).replaceAll("\\s+", ""));
-                            while (m.find()) {
-                                allMatches.add(m.group());
-                            }
-
-                            double[][] SYMr = new double[3][3];
-                            double[] SYMt = new double[3];
-                            String sTemp = "";
-
-                            for(int i = 0; i < 3; i++){
-                                sTemp = allMatches.get(i);
-                                SYMt[i] = FastMath.eval(sTemp
-                                        .replaceAll("X", "0.0")
-                                        .replaceAll("Y", "0.0")
-                                        .replaceAll("Z", "0.0"));
-                            }
-                            for(int i = 0; i < 3; i++){
-                                sTemp = allMatches.get(i);
-                                SYMr[i][0] = -SYMt[i] + FastMath.eval(sTemp
-                                        .replaceAll("X", "1.0")
-                                        .replaceAll("Y", "0.0")
-                                        .replaceAll("Z", "0.0"));
-                                SYMr[i][1] = -SYMt[i] + FastMath.eval(sTemp
-                                        .replaceAll("X", "0.0")
-                                        .replaceAll("Y", "1.0")
-                                        .replaceAll("Z", "0.0"));
-                                SYMr[i][2] = -SYMt[i] + FastMath.eval(sTemp
-                                        .replaceAll("X", "0.0")
-                                        .replaceAll("Y", "0.0")
-                                        .replaceAll("Z", "1.0"));
-                            }
-                            this.symMass.add(new SymmetryItem(SYMr, SYMt));
-                            if (this.LATT > 0) {
-                                SYMt = (double[]) deepClone(SYMt);
-                                SYMr = (double[][]) deepClone(SYMr);
-                                for(int i = 0; i < 3; i++){
-                                    SYMt[i] *= -1;
-                                   for (int j = 0; j < 3; j++) {
-                                       SYMr[i][j] *= -1;
-                                   }
-                                }
-                                this.symMass.add(new SymmetryItem(SYMr, SYMt));
-                            }
-                            SYMr = null;
-                            SYMt = null;
-                            allMatches.clear();
-                        } catch (NumberFormatException s2nSYM) {
-                        }
-
-
-                    }
-                }
-
-                double[][] SYMr = new double[3][3];
-                double[] SYMt = new double[3];
-                SYMt[0] = SYMt[1] = SYMt[2] = 0;
-                SYMr[0][0] = SYMr[1][1] = SYMr[2][2] = 1;
-                SYMr[0][1] = SYMr[0][2] = SYMr[1][0] = SYMr[1][2] = SYMr[2][0] = SYMr[2][1] = 0;
-                this.symMass.add(new SymmetryItem(SYMr, SYMt));
-                if (LATT > 0) {
-                    SYMt = (double[]) deepClone(SYMt);
-                    SYMr = (double[][]) deepClone(SYMr);
                     for(int i = 0; i < 3; i++){
-                        SYMt[i] *= -1;
-                        for (int j = 0; j < 3; j++) {
-                            SYMr[i][j] *= -1;
-                        }
+                        sTemp = allMatches.get(i);
+                        SYMt[i] = FastMath.eval(sTemp
+                                .replaceAll("X", "0.0")
+                                .replaceAll("Y", "0.0")
+                                .replaceAll("Z", "0.0"));
+                    }
+                    for(int i = 0; i < 3; i++){
+                        sTemp = allMatches.get(i);
+                        SYMr[i][0] = -SYMt[i] + FastMath.eval(sTemp
+                                .replaceAll("X", "1.0")
+                                .replaceAll("Y", "0.0")
+                                .replaceAll("Z", "0.0"));
+                        SYMr[i][1] = -SYMt[i] + FastMath.eval(sTemp
+                                .replaceAll("X", "0.0")
+                                .replaceAll("Y", "1.0")
+                                .replaceAll("Z", "0.0"));
+                        SYMr[i][2] = -SYMt[i] + FastMath.eval(sTemp
+                                .replaceAll("X", "0.0")
+                                .replaceAll("Y", "0.0")
+                                .replaceAll("Z", "1.0"));
                     }
                     this.symMass.add(new SymmetryItem(SYMr, SYMt));
+                    if (this.LATT > 0) {
+                        SYMt = (double[]) deepClone(SYMt);
+                        SYMr = (double[][]) deepClone(SYMr);
+                        for(int i = 0; i < 3; i++){
+                            SYMt[i] *= -1;
+                            for (int j = 0; j < 3; j++) {
+                                SYMr[i][j] *= -1;
+                            }
+                        }
+                        this.symMass.add(new SymmetryItem(SYMr, SYMt));
+                    }
+                    SYMr = null;
+                    SYMt = null;
+                    allMatches.clear();
+                } catch (NumberFormatException s2nSYM) {
                 }
-                SYMr = null;
-                SYMt = null;
-                LATTirazation();
+
+
+            }
+        }
+
+        double[][] SYMr = new double[3][3];
+        double[] SYMt = new double[3];
+        SYMt[0] = SYMt[1] = SYMt[2] = 0;
+        SYMr[0][0] = SYMr[1][1] = SYMr[2][2] = 1;
+        SYMr[0][1] = SYMr[0][2] = SYMr[1][0] = SYMr[1][2] = SYMr[2][0] = SYMr[2][1] = 0;
+        this.symMass.add(new SymmetryItem(SYMr, SYMt));
+        if (LATT > 0) {
+            SYMt = (double[]) deepClone(SYMt);
+            SYMr = (double[][]) deepClone(SYMr);
+            for(int i = 0; i < 3; i++){
+                SYMt[i] *= -1;
+                for (int j = 0; j < 3; j++) {
+                    SYMr[i][j] *= -1;
+                }
+            }
+            this.symMass.add(new SymmetryItem(SYMr, SYMt));
+        }
+        SYMr = null;
+        SYMt = null;
+        LATTirazation();
 
 
     }

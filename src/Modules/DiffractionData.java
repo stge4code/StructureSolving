@@ -10,9 +10,7 @@ import Utilities.ObjectsUtilities;
 import java.io.*;
 import java.text.NumberFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,6 +21,7 @@ import static Utilities.ObjectsUtilities.generateAtomNum;
  */
 public class DiffractionData {
     private String diffDataFilename = "";
+    private String diffractionDataFilenameExport = "";
     private List<ReciprocalItem> HKL = new ArrayList<>();
     private DiffractionDataSettings DIFDATASETTINGS;
 
@@ -30,6 +29,7 @@ public class DiffractionData {
     public class DiffractionDataSettings {
         private String diffractionDataSettingsFilename;
         private String MERGE;
+        private String ORDER;
         private int[] N = new int[2];
         private SortRules SORT_H = new SortRules();
         private SortRules SORT_K = new SortRules();
@@ -89,6 +89,9 @@ public class DiffractionData {
                             case "MERGE":
                                 this.MERGE = allMatches.get(1);
                                 break;
+                            case "ORDER":
+                                this.ORDER = allMatches.get(1);
+                                break;
                             default:
                                 break;
                         }
@@ -102,10 +105,12 @@ public class DiffractionData {
 
     public DiffractionData(UnitCell CELL,
                            String diffdatafilename,
-                           String diffractionSettingsFilename) {
+                           String diffractionSettingsFilename,
+                           String diffractionDataFilenameExport) {
 
         this.diffDataFilename = diffdatafilename;
         this.DIFDATASETTINGS = new DiffractionDataSettings(diffractionSettingsFilename);
+        this.diffractionDataFilenameExport = diffractionDataFilenameExport;
 
         List<String> input = ObjectsUtilities.getContentFromFile(diffDataFilename);
         for (String s : input) {
@@ -145,6 +150,90 @@ public class DiffractionData {
                 }
             }
         }
+
+        if (!DIFDATASETTINGS.ORDER.equals("N")) {
+            System.out.print("\rOrdering reflections...");
+            for (char mch : DIFDATASETTINGS.ORDER.toCharArray()) {
+                switch (mch) {
+                    case 'D' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.scatvect > b.scatvect)? 1 : ((a.scatvect == b.scatvect) ? 0 : -1));
+                                });
+                        break;
+                    case 'd' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.scatvect > b.scatvect)? -1 : ((a.scatvect == b.scatvect) ? 0 : 1));
+                                });
+                        break;
+                    case 'H' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.h > b.h)? -1 : ((a.h == b.h) ? 0 : 1));
+                                });
+                        break;
+                    case 'h' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.h > b.h)? 1 : ((a.h == b.h) ? 0 : -1));
+                                });
+                        break;
+                    case 'L' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.l > b.l)? -1 : ((a.l == b.l) ? 0 : 1));
+                                });
+                        break;
+                    case 'l' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.l > b.l)? 1 : ((a.l == b.l) ? 0 : -1));
+                                });
+                        break;
+                    case 'K' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.k > b.k)? -1 : ((a.k == b.k) ? 0 : 1));
+                                });
+                        break;
+                    case 'k' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.k > b.k)? 1 : ((a.k == b.k) ? 0 : -1));
+                                });
+                        break;
+                    case 'I' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.Fsq > b.Fsq)? -1 : ((a.Fsq == b.Fsq) ? 0 : 1));
+                                });
+                        break;
+                    case 'i' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.Fsq > b.Fsq)? 1 : ((a.Fsq == b.Fsq) ? 0 : -1));
+                                });
+                        break;
+                    case 'S' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.sigmaFsq > b.sigmaFsq)? -1 : ((a.sigmaFsq == b.sigmaFsq) ? 0 : 1));
+                                });
+                        break;
+                    case 's' :
+                        Collections.sort(this.HKL,
+                                (ReciprocalItem a, ReciprocalItem b) -> {
+                                    return ((a.sigmaFsq > b.sigmaFsq)? 1 : ((a.sigmaFsq == b.sigmaFsq) ? 0 : -1));
+                                });
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+
         System.out.print("\r\r");
 
         if (this.HKL.isEmpty()) System.exit(0);
@@ -359,18 +448,18 @@ public class DiffractionData {
         return HKL;
     }
 
-    public void PrintHKL(String diffractionDataFilenameExport) {
+    public void printHKL() {
 
         List<String> output = new ArrayList<>();
         for (ReciprocalItem itemHKL : this.HKL) {
-            output.add(String.format("% 4d% 4d% 4d% 8g% 8g% 4d",
+            output.add(String.format("% 4d% 4d% 4d %8g %8g% 4d",
                     itemHKL.h,
                     itemHKL.k,
                     itemHKL.l,
-                    itemHKL.Fsq,
-                    itemHKL.sigmaFsq,
+                    FastMath.round(itemHKL.Fsq, 6),
+                    FastMath.round(itemHKL.sigmaFsq, 6),
                     (int) itemHKL.batchNumber));
         }
-        ObjectsUtilities.putContentToFile(diffractionDataFilenameExport, output);
+        ObjectsUtilities.putContentToFile(this.diffractionDataFilenameExport, output);
     }
 }
