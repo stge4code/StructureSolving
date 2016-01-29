@@ -716,7 +716,7 @@ public class MoRmodule {
             //E.calcEnergy(FRAG_I);
             statE.add(E.E);
             statEcore.add(E.Ecore);
-            statK.add(E.K);
+            statK.add(E.getK());
 
             if (E.Ecore < minEcore) {
                 numDecreasesGlobal++;
@@ -744,14 +744,23 @@ public class MoRmodule {
             statModGsqErest.add(ModsGparts[1]);
             statModGsqEcore.add(ModsGparts[2]);
             statModGsqEpenalty.add(ModsGparts[3]);
-            E.wExray = (MORSETTINGS.wExray == -1) ? calcW(statModGsqExray, statModGsqErest) : MORSETTINGS.wExray;
-            E.wEcore = (MORSETTINGS.wEcore == -1) ? calcW(statModGsqEcore, statModGsqEpenalty) : MORSETTINGS.wEcore;
+            if (MORSETTINGS.wExray == -1)  {
+                E.improvewExray(calcW(statModGsqExray, statModGsqErest));
+            } else  {
+                E.improvewExray(MORSETTINGS.wExray);
+            }
+            if (MORSETTINGS.wEcore == -1) {
+                E.improvewEcore(calcW(statModGsqEcore, statModGsqEpenalty));
+            } else {
+                E.improvewEcore(MORSETTINGS.wEcore);
+            }
 
 
             rho = findRho(FRAG_II, FRAG_I);
             FRAG_II = null;
             FRAG_II = (FragmentData) deepClone(FRAG_I);
             jumpRaviness(FRAG_I, rho, h);
+            E.improveK(FRAG_I);
             E.calcEnergy(FRAG_I);
             if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, i + 1, "J");
 

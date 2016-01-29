@@ -30,12 +30,14 @@ public class DiffractionData {
         private String diffractionDataSettingsFilename;
         private String MERGE;
         private String ORDER;
+        private double SCATTERING_MERGE_ACCURACY;
         private int[] N = new int[2];
         private SortRules SORT_H = new SortRules();
         private SortRules SORT_K = new SortRules();
         private SortRules SORT_L = new SortRules();
         private SortRules SORT_RES = new SortRules();
         private SortRules SORT_ISI = new SortRules();
+        private SortRules SORT_I = new SortRules();
 
         private class SortRules {
             public ArrayList<String> l = new ArrayList<>();
@@ -70,8 +72,14 @@ public class DiffractionData {
                             case "RES":
                                 this.SORT_RES = genSortRules(allMatches.get(1));
                                 break;
+                            case "SCATTERING_MERGE_ACCURACY":
+                                this.SCATTERING_MERGE_ACCURACY = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
                             case "I/S(I)":
                                 this.SORT_ISI = genSortRules(allMatches.get(1));
+                                break;
+                            case "I":
+                                this.SORT_I = genSortRules(allMatches.get(1));
                                 break;
                             case "H":
                                 this.SORT_H = genSortRules(allMatches.get(1));
@@ -307,12 +315,15 @@ public class DiffractionData {
             ReciprocalItem itemHKL = iterHKL.next();
             int i = 0;
             for (ReciprocalItem itemHKLm : merged) {
-                if (Math.abs(itemHKLm.scatvect - itemHKL.scatvect) < 1E-3) {
+                if (Math.abs(itemHKLm.scatvect - itemHKL.scatvect) < this.DIFDATASETTINGS.SCATTERING_MERGE_ACCURACY) {
+                    if ((itemHKL.h <= itemHKLm.h) && (itemHKL.k <= itemHKLm.k) && (itemHKL.l <= itemHKLm.l)) {
+                        itemHKLm.h = itemHKL.h;
+                        itemHKLm.k = itemHKL.k;
+                        itemHKLm.l = itemHKL.l;
+                    }
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
-                    itemHKLm.Fsq *= i_;
                     itemHKLm.Fsq += itemHKL.Fsq;
-                    itemHKLm.Fsq /= (i_ + 1.0);
                     itemHKLm.sigmaFsq *= i_;
                     itemHKLm.sigmaFsq += itemHKL.sigmaFsq;
                     itemHKLm.sigmaFsq /= (i_ + 1.0);
@@ -343,6 +354,23 @@ public class DiffractionData {
         double checkvalue = 0;
         double resolution = 0;
         try {
+
+            for (String S : DIFDATASETTINGS.SORT_I.l) {
+                checkvalue = Double.valueOf(S).doubleValue();
+                condition = condition & (HKL.Fsq < checkvalue);
+                if (!condition) return false;
+            }
+            for (String S : DIFDATASETTINGS.SORT_I.e) {
+                checkvalue = Double.valueOf(S).doubleValue();
+                condition = condition & (HKL.Fsq == checkvalue);
+                if (!condition) return false;
+            }
+            for (String S : DIFDATASETTINGS.SORT_I.g) {
+                checkvalue = Double.valueOf(S).doubleValue();
+                condition = condition & (HKL.Fsq  > checkvalue);
+                if (!condition) return false;
+            }
+
             for (String S : DIFDATASETTINGS.SORT_ISI.l) {
                 checkvalue = Double.valueOf(S).doubleValue();
                 condition = condition & (HKL.Fsq / HKL.sigmaFsq < checkvalue);

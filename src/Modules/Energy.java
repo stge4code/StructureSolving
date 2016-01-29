@@ -28,13 +28,14 @@ public class Energy {
     public double Erest;
     public double Ecore;
     public double Epenalty;
-    public double wExray;
-    public double wEcore;
-    public double K;
+    private double wExray;
+    private double wEcore;
+    private double K;
     public double RI;
     public double RII;
     public double RIII;
     public double RIV;
+    private boolean autoAdjustK = false;
     public List<ComplexNumber> statFc = new ArrayList<>();
     private PenaltyFunction PSI;
     private List<Double> statWhkl = new ArrayList<>();
@@ -45,6 +46,7 @@ public class Energy {
 
         private String energySettingsFilename;
         private int WEIGHT_SCHEME = 0;
+        private String ATOMS_PAIR_GENERATOR = "";
         private double A2 = 28.0;
         private double B2 = 14.0;
         private double K2 = 1.0;
@@ -70,6 +72,9 @@ public class Energy {
                             break;
                         case "K2":
                             this.K2 = Double.valueOf(allMatches.get(1)).doubleValue();
+                            break;
+                        case "ATOMS_PAIR_GENERATOR":
+                            this.ATOMS_PAIR_GENERATOR = (allMatches.size() > 1) ? allMatches.get(1) : "";
                             break;
                         default:
                             break;
@@ -133,6 +138,19 @@ public class Energy {
         calcwHKL();
     }
 
+
+    public double getK() {
+        return K;
+    }
+
+    public double getwExray() {
+        return wExray;
+    }
+
+    public double getwEcore() {
+        return wEcore;
+    }
+
     public boolean ifInCell(double x, double y, double z) {
         boolean condition = (x <= 1) && (x >= 0) && (y <= 1) && (y >= 0) && (z <= 1) && (z >= 0);
         if (condition) return true;
@@ -181,21 +199,39 @@ public class Energy {
                                                                 imAtom_j.getAtomY(),
                                                                 imAtom_j.getAtomZ()
                                                         }));
-                                double[] VECT_it = VECT_i;
-                                for (int tX = -1; tX < 2; tX++) {
-                                    for (int tY = -1; tY < 2; tY++) {
-                                        for (int tZ = -1; tZ < 2; tZ++) {
-                                            double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
-                                            if (ifInCell(
-                                                    (VECT_jt[0] + VECT_it[0]) / 2.0,
-                                                    (VECT_jt[1] + VECT_it[1]) / 2.0,
-                                                    (VECT_jt[2] + VECT_it[2]) / 2.0)) {
-                                                double R = this.CELL.calcDistance(VECT_it[0] - VECT_jt[0], VECT_it[1] - VECT_jt[1], VECT_it[2] - VECT_jt[2]);
-                                                result.add(new aPair(
-                                                        VECT_it[0], VECT_it[1], VECT_it[2],
-                                                        VECT_jt[0], VECT_jt[1], VECT_jt[2], R, DVdW));
+                                if (this.ENERGYSETTINGS.ATOMS_PAIR_GENERATOR.contains("T")) {
+                                    double[] VECT_it = VECT_i;
+                                    for (int tX = -1; tX < 2; tX++) {
+                                        for (int tY = -1; tY < 2; tY++) {
+                                            for (int tZ = -1; tZ < 2; tZ++) {
+                                                double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
+                                                if (ifInCell(
+                                                        (VECT_jt[0] + VECT_it[0]) / 2.0,
+                                                        (VECT_jt[1] + VECT_it[1]) / 2.0,
+                                                        (VECT_jt[2] + VECT_it[2]) / 2.0)) {
+                                                    double R = this.CELL.calcDistance(
+                                                            VECT_it[0] - VECT_jt[0],
+                                                            VECT_it[1] - VECT_jt[1],
+                                                            VECT_it[2] - VECT_jt[2]);
+                                                    result.add(new aPair(
+                                                            VECT_it[0], VECT_it[1], VECT_it[2],
+                                                            VECT_jt[0], VECT_jt[1], VECT_jt[2], R, DVdW));
+                                                }
                                             }
                                         }
+                                    }
+                                } else {
+                                    if (ifInCell(
+                                            (VECT_j[0] + VECT_i[0]) / 2.0,
+                                            (VECT_j[1] + VECT_i[1]) / 2.0,
+                                            (VECT_j[2] + VECT_i[2]) / 2.0)) {
+                                        double R = this.CELL.calcDistance(
+                                                VECT_i[0] - VECT_j[0],
+                                                VECT_i[1] - VECT_j[1],
+                                                VECT_i[2] - VECT_j[2]);
+                                        result.add(new aPair(
+                                                VECT_i[0], VECT_i[1], VECT_i[2],
+                                                VECT_j[0], VECT_j[1], VECT_j[2], R, DVdW));
                                     }
                                 }
                             }
@@ -287,7 +323,7 @@ public class Energy {
 
     public void printInfo() {
         List<String> output = new ArrayList<>();
-        output.add(String.format("%4s %4s %4s %14s %14s %14s %14s %14s",
+        output.add(String.format("%4s %4s %4s %14s %14s %14s %14s %14s %14s",
                 "h",
                 "k",
                 "l",
@@ -295,11 +331,12 @@ public class Energy {
                 "Fo",
                 "Fo/K",
                 "Mod(Fc)",
-                "Arg(Fc)"));
+                "Arg(Fc)",
+                "Io-K*Ic"));
         for (int i = 0; i < this.HKL.getHKL().size(); i++) {
             ReciprocalItem itemHKL = this.HKL.getHKL().get(i);
             ComplexNumber itemFc = this.statFc.get(i);
-            output.add(String.format("%4d %4d %4d % .7e % .7e % .7e % .7e % .7e",
+            output.add(String.format("%4d %4d %4d % .7e % .7e % .7e % .7e % .7e % .7e",
                     itemHKL.h,
                     itemHKL.k,
                     itemHKL.l,
@@ -307,11 +344,53 @@ public class Energy {
                     FastMath.round(Math.sqrt(itemHKL.Fsq), 8),
                     FastMath.round(Math.sqrt(itemHKL.Fsq) / this.K, 8),
                     FastMath.round(itemFc.getModule(), 8),
-                    FastMath.round(itemFc.getPhase(), 8)));
+                    FastMath.round(itemFc.getPhase(), 8),
+                    FastMath.round(itemHKL.Fsq - this.K * Math.pow(itemFc.getModule(), 2), 8)));
         }
         ObjectsUtilities.putContentToFile(this.infoFileName, output);
     }
 
+    public void setAutoImprovementK(boolean autoAdjustK) {
+        this.autoAdjustK = autoAdjustK;
+    }
+
+    public void improveK(FragmentData FRAG) {
+        double sumFoFc = 0;
+        double sumFcFc = 0;
+        double Fc = 0;
+        double sumFcIm = 0;
+        double sumFcRe = 0;
+        double Fo = 0;
+        this.statFc.clear();
+
+        for (int i = 0; i < this.HKL.getHKL().size(); i++) {
+            sumFcIm = sumFcRe = 0;
+            for (Fragment itemFrag : FRAG.getFragMass()) {
+                ComplexNumber fScat = itemFrag.fragScattering(this.HKL.getHKL().get(i), this.CELL, this.SYM);
+                sumFcRe += fScat.getRe();
+                sumFcIm += fScat.getIm();
+            }
+            Fc = Math.sqrt(Math.pow(sumFcIm, 2) + Math.pow(sumFcRe, 2));
+            Fo = Math.sqrt(this.HKL.getHKL().get(i).Fsq);
+            sumFoFc += this.statWhkl.get(i) * Fo * Fc;
+            sumFcFc += this.statWhkl.get(i) * Math.pow(Fc, 2);
+            this.statFc.add(new ComplexNumber(sumFcRe, sumFcIm));
+
+        }
+        this.K = sumFoFc / sumFcFc;
+    }
+
+    public void improveK(double K) {
+        this.K = K;
+    }
+
+    public void improvewExray(double wExray) {
+        this.wExray = wExray;
+    }
+
+    public void improvewEcore(double wEcore) {
+        this.wExray = wEcore;
+    }
 
     public void calcEnergy(FragmentData FRAG) {
         /**
@@ -366,7 +445,7 @@ public class Energy {
             this.statFc.add(new ComplexNumber(sumFcRe, sumFcIm));
 
         }
-        this.K = sumFoFc / sumFcFc;
+        if (this.autoAdjustK) improveK(sumFoFc / sumFcFc);
         this.RI = sumFomkFc / sumFo;
         this.RII = sumFomFc_cond / sumFo_cond;
         this.RIII = Math.sqrt(sumwFomFcSq / sumwFoSq);

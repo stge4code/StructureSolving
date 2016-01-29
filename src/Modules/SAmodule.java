@@ -569,7 +569,7 @@ public class SAmodule {
             E.calcEnergy(FRAG_II);
             statE.add(E.E);
             statEglobal.add(E.E);
-            statK.add(E.K);
+            statK.add(E.getK());
             minE = statE.get(statE.indexOf(Collections.min(statE)));
             minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
 
@@ -601,7 +601,7 @@ public class SAmodule {
                 if (Delta != 0) {
                     statModGsqErest.add(Math.pow(E.Erest / Delta, 2));
                 }
-                statK.add(E.K);
+                statK.add(E.getK());
 //----------------------------------------------------------------------------------------------------------------------
                 if (itemTemperatureItem.cycleOpt.contains("Xr") || itemTemperatureItem.cycleOpt.contains("Re")) {
                     if (itemTemperatureItem.cycleOpt.contains("B")) {
@@ -614,12 +614,14 @@ public class SAmodule {
                 if (itemTemperatureItem.cycleOpt.contains("Re")) {
                     if (itemTemperatureItem.cycleOpt.contains("Xr")) {
                         if (itemTemperatureItem.cycleOpt.contains("W")) {
-                            E.wExray = wExray = calcW(statModGsqExray, statModGsqErest);
+                            wExray = calcW(statModGsqExray, statModGsqErest);
+                            E.improvewExray(wExray);
                             strSTATUS += "Weights calculation, ";
                             strOUT += String.format(" %-30s= %-12e\n", "Exray weight w", wExray);
                         }
                     } else {
-                        E.wExray = wExray = 0;
+                        wExray = 0;
+                        E.improvewExray(wExray);
                         strSTATUS += "Dynamics simulation only, ";
                     }
                 }
