@@ -145,6 +145,9 @@ public class DiffractionData {
                     case 'U' :
                         this.HKL = mergeUniqueReflections(this.HKL);
                         break;
+                    case 'S' :
+                        this.HKL = mergeSameScatteringReflections(this.HKL);
+                        break;
                    default:
                        break;
                 }
@@ -276,6 +279,35 @@ public class DiffractionData {
             int i = 0;
             for (ReciprocalItem itemHKLm : merged) {
                 if ((itemHKLm.h == -itemHKL.h) && (itemHKLm.k == -itemHKL.k) && (itemHKLm.l == -itemHKL.l)) {
+                    int i_ = counter.get(i).intValue();
+                    counter.set(i, Integer.valueOf(i_ + 1));
+                    itemHKLm.Fsq *= i_;
+                    itemHKLm.Fsq += itemHKL.Fsq;
+                    itemHKLm.Fsq /= (i_ + 1.0);
+                    itemHKLm.sigmaFsq *= i_;
+                    itemHKLm.sigmaFsq += itemHKL.sigmaFsq;
+                    itemHKLm.sigmaFsq /= (i_ + 1.0);
+                    break;
+                }
+                i++;
+            }
+            if (i == merged.size()) {
+                merged.add(new ReciprocalItem(itemHKL));
+                counter.add(Integer.valueOf(1));
+            }
+        }
+        return merged;
+    }
+
+
+    private List<ReciprocalItem> mergeSameScatteringReflections(List<ReciprocalItem> unMerged) {
+        List<ReciprocalItem> merged = new ArrayList<>();
+        List<Integer> counter = new ArrayList<>();
+        for (Iterator<ReciprocalItem> iterHKL = unMerged.iterator(); iterHKL.hasNext(); ) {
+            ReciprocalItem itemHKL = iterHKL.next();
+            int i = 0;
+            for (ReciprocalItem itemHKLm : merged) {
+                if (Math.abs(itemHKLm.scatvect - itemHKL.scatvect) < 1E-3) {
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
                     itemHKLm.Fsq *= i_;
