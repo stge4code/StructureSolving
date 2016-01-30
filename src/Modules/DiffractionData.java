@@ -23,6 +23,8 @@ public class DiffractionData {
     private String diffDataFilename = "";
     private String diffractionDataFilenameExport = "";
     private List<ReciprocalItem> HKL = new ArrayList<>();
+    private double IMax;
+    private double IMin;
     private DiffractionDataSettings DIFDATASETTINGS;
 
 
@@ -217,25 +219,25 @@ public class DiffractionData {
                     case 'I' :
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.Fsq > b.Fsq)? -1 : ((a.Fsq == b.Fsq) ? 0 : 1));
+                                    return ((a.I > b.I)? -1 : ((a.I == b.I) ? 0 : 1));
                                 });
                         break;
                     case 'i' :
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.Fsq > b.Fsq)? 1 : ((a.Fsq == b.Fsq) ? 0 : -1));
+                                    return ((a.I > b.I)? 1 : ((a.I == b.I) ? 0 : -1));
                                 });
                         break;
                     case 'S' :
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.sigmaFsq > b.sigmaFsq)? -1 : ((a.sigmaFsq == b.sigmaFsq) ? 0 : 1));
+                                    return ((a.sigmaI > b.sigmaI)? -1 : ((a.sigmaI == b.sigmaI) ? 0 : 1));
                                 });
                         break;
                     case 's' :
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.sigmaFsq > b.sigmaFsq)? 1 : ((a.sigmaFsq == b.sigmaFsq) ? 0 : -1));
+                                    return ((a.sigmaI > b.sigmaI)? 1 : ((a.sigmaI == b.sigmaI) ? 0 : -1));
                                 });
                         break;
                     default:
@@ -244,10 +246,29 @@ public class DiffractionData {
             }
         }
 
-
+        findHKLParameters();
         System.out.print("\r\r");
-
         if (this.HKL.isEmpty()) System.exit(0);
+    }
+
+
+    public double getIMax() {
+        return IMax;
+    }
+
+    public double getIMin() {
+        return IMin;
+    }
+
+    private void findHKLParameters(){
+        double IMin = this.HKL.get(0).I;
+        double IMax = 0;
+        for (ReciprocalItem itemHKL : this.HKL) {
+                IMin = Math.min(IMin, itemHKL.I);
+                IMax = Math.max(IMax, itemHKL.I);
+        }
+        this.IMax = IMax;
+        this.IMin = IMin;
     }
 
 
@@ -261,12 +282,12 @@ public class DiffractionData {
                 if ((itemHKLm.h == itemHKL.h) && (itemHKLm.k == itemHKL.k) && (itemHKLm.l == itemHKL.l)) {
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
-                    itemHKLm.Fsq *= i_;
-                    itemHKLm.Fsq += itemHKL.Fsq;
-                    itemHKLm.Fsq /= (i_ + 1.0);
-                    itemHKLm.sigmaFsq *= i_;
-                    itemHKLm.sigmaFsq += itemHKL.sigmaFsq;
-                    itemHKLm.sigmaFsq /= (i_ + 1.0);
+                    itemHKLm.I *= i_;
+                    itemHKLm.I += itemHKL.I;
+                    itemHKLm.I /= (i_ + 1.0);
+                    itemHKLm.sigmaI *= i_;
+                    itemHKLm.sigmaI += itemHKL.sigmaI;
+                    itemHKLm.sigmaI /= (i_ + 1.0);
                     break;
                 }
                 i++;
@@ -289,12 +310,12 @@ public class DiffractionData {
                 if ((itemHKLm.h == -itemHKL.h) && (itemHKLm.k == -itemHKL.k) && (itemHKLm.l == -itemHKL.l)) {
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
-                    itemHKLm.Fsq *= i_;
-                    itemHKLm.Fsq += itemHKL.Fsq;
-                    itemHKLm.Fsq /= (i_ + 1.0);
-                    itemHKLm.sigmaFsq *= i_;
-                    itemHKLm.sigmaFsq += itemHKL.sigmaFsq;
-                    itemHKLm.sigmaFsq /= (i_ + 1.0);
+                    itemHKLm.I *= i_;
+                    itemHKLm.I += itemHKL.I;
+                    itemHKLm.I /= (i_ + 1.0);
+                    itemHKLm.sigmaI *= i_;
+                    itemHKLm.sigmaI += itemHKL.sigmaI;
+                    itemHKLm.sigmaI /= (i_ + 1.0);
                     break;
                 }
                 i++;
@@ -323,10 +344,10 @@ public class DiffractionData {
                     }
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
-                    itemHKLm.Fsq += itemHKL.Fsq;
-                    itemHKLm.sigmaFsq *= i_;
-                    itemHKLm.sigmaFsq += itemHKL.sigmaFsq;
-                    itemHKLm.sigmaFsq /= (i_ + 1.0);
+                    itemHKLm.I += itemHKL.I;
+                    itemHKLm.sigmaI *= i_;
+                    itemHKLm.sigmaI += itemHKL.sigmaI;
+                    itemHKLm.sigmaI /= (i_ + 1.0);
                     break;
                 }
                 i++;
@@ -357,33 +378,33 @@ public class DiffractionData {
 
             for (String S : DIFDATASETTINGS.SORT_I.l) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq < checkvalue);
+                condition = condition & (HKL.I < checkvalue);
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_I.e) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq == checkvalue);
+                condition = condition & (HKL.I == checkvalue);
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_I.g) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq  > checkvalue);
+                condition = condition & (HKL.I  > checkvalue);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_ISI.l) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq / HKL.sigmaFsq < checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI < checkvalue);
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_ISI.e) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq / HKL.sigmaFsq == checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI == checkvalue);
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_ISI.g) {
                 checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.Fsq / HKL.sigmaFsq > checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI > checkvalue);
                 if (!condition) return false;
             }
             resolution = 1.0 / 2.0 / HKL.scatvect;
@@ -516,8 +537,8 @@ public class DiffractionData {
                     itemHKL.h,
                     itemHKL.k,
                     itemHKL.l,
-                    FastMath.round(itemHKL.Fsq, 6),
-                    FastMath.round(itemHKL.sigmaFsq, 6),
+                    FastMath.round(itemHKL.I, 6),
+                    FastMath.round(itemHKL.sigmaI, 6),
                     (int) itemHKL.batchNumber));
         }
         ObjectsUtilities.putContentToFile(this.diffractionDataFilenameExport, output);

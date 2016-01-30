@@ -545,7 +545,7 @@ public class MoRmodule {
             rho[i] = getParameters(FRAGend, ParametersList, i) - getParameters(FRAGbegin, ParametersList, i);
         }
 
-        return FastMath.KmV(1 / FastMath.modV(rho), rho);
+        return FastMath.KmV(1.0 / FastMath.modV(rho), rho);
     }
 
     public void jumpRaviness(FragmentData FRAG, double[] rho, double h) {
@@ -757,7 +757,6 @@ public class MoRmodule {
 
 
             rho = findRho(FRAG_II, FRAG_I);
-            FRAG_II = null;
             FRAG_II = (FragmentData) deepClone(FRAG_I);
             jumpRaviness(FRAG_I, rho, h);
             E.improveK(FRAG_I);

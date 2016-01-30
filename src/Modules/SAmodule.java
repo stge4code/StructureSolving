@@ -539,8 +539,8 @@ public class SAmodule {
         }
         FRAG.printFrags();
         FragmentData FRAG_I = (FragmentData) deepClone(FRAG);
-        FragmentData FRAG_III = (FragmentData) deepClone(FRAG);
         FragmentData FRAG_II = (FragmentData) deepClone(FRAG);
+        FragmentData FRAG_III = (FragmentData) deepClone(FRAG);
         Iterator<TemperatureItem> iterCYCLE = this.TEMPREGIME.getREGIME().iterator();
 
         if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
