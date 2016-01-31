@@ -335,7 +335,10 @@ public final class FastMath {
         return 0;
     }
 
-    public static void randomizeParameters(UnitCell CELL, FragmentData FRAG, int NUM) {
+
+
+
+    public static void randomizeParametersInitial(UnitCell CELL, FragmentData FRAG, int NUM) {
 
         double dX = 0, dY = 0, dZ = 0;
         double dPhi1 = 0, dPhi2 = 0, dTheta = 0;

@@ -3,6 +3,7 @@ package Modules;
 import CrystTools.Fragment;
 import CrystTools.Symmetry;
 import CrystTools.UnitCell;
+import MathTools.FastMath;
 import Utilities.ObjectsUtilities;
 
 import java.io.BufferedReader;
@@ -13,6 +14,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static MathTools.FastMath.addToParameters;
+import static MathTools.FastMath.generateParametersList;
+import static MathTools.FastMath.randomizeParametersInitial;
 import static Utilities.ObjectsUtilities.*;
 
 /**
@@ -159,7 +163,7 @@ public class SAmodule {
         this.tempFileName = tempFileName;
         this.resultFileName = resultFileName;
         DeleteFile(tempFileName);
-        generateParametersList(FRAG);
+        this.ParametersList = generateParametersList(FRAG);
         this.E = E;
     }
 
@@ -227,7 +231,7 @@ public class SAmodule {
         return 0;
     }
 
-    public int findNumParameters(FragmentData FRAG) {
+    /*public int findNumParameters(FragmentData FRAG) {
         int parametersNum = 0;
         for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
             Fragment itemFRAG = iterFRAG.next();
@@ -242,15 +246,9 @@ public class SAmodule {
 
     public void randomizeParametersInitial(FragmentData FRAG, int NUM) {
 
-        double dX = 0;
-        double dY = 0;
-        double dZ = 0;
-
-        double dPhi1 = 0;
-        double dPhi2 = 0;
-        double dTheta = 0;
-        double dO = 0;
-        double dU = 0;
+        double dX = 0, dY = 0, dZ = 0;
+        double dPhi1 = 0, dPhi2 = 0, dTheta = 0;
+        double dO = 0, dU = 0;
 
         for (int randNUM = 0; randNUM < NUM; randNUM++) {
             for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
@@ -271,18 +269,18 @@ public class SAmodule {
                 itemFRAG.fragModifyParameters(CELL, dX, dY, dZ, dPhi1, dPhi2, dTheta, dO, dU);
             }
         }
-    }
+    }*/
 
 
     public double randomizeParameters(FragmentData FRAG) {
         Random randomVal = new Random();
         int parametersChoice = randomVal.nextInt(this.ParametersList.length);
         double Delta = randomizeDouble("SYM", SASETTINGS.MAX_PARAMETERS_STEP);
-        addToParameters(FRAG, parametersChoice, Delta);
+        addToParameters(this.CELL, FRAG, this.ParametersList, parametersChoice, Delta);
         return Delta;
     }
 
-
+/*
     public double getParameters(FragmentData FRAG, int numPAR) {
         Fragment itemFRAG = FRAG.getFragMass().get((int) (this.ParametersList[numPAR] / 10));
         switch ((int) (this.ParametersList[numPAR] % 10)) {
@@ -403,7 +401,7 @@ public class SAmodule {
                 break;
         }
         itemFRAG.fragModifyParameters(this.CELL, dX, dY, dZ, dPhi1, dPhi2, dTheta, dO, dU);
-    }
+    }*/
 
 
     public String sumOptions(List<String> opt) {
@@ -415,9 +413,9 @@ public class SAmodule {
     }
 
 
-    public void printTempInfo(FragmentData FRAG, Energy E, int loop, String regime){
+    public void printTempInfo(FragmentData FRAG, Energy E, int loop, String regime) {
         List<String> output = new ArrayList<>();
-        if(regime.equals("")) {
+        if (regime.equals("")) {
             output.add(String.format("%5s %4s %12s %6s %6s %6s %6s %7s %7s %7s %7s %7s %7s %7s %7s",
                     "#",
                     "TYPE",
@@ -463,7 +461,6 @@ public class SAmodule {
     }
 
 
-
     public void run() {
 
         List<Double> statE = new ArrayList<>();
@@ -473,9 +470,9 @@ public class SAmodule {
         List<Double> statK = new ArrayList<>();
         List<String> opt = new ArrayList<>();
 
-        String strOUT = "";
-        String strSTATUS = "";
-        String strIND = "";
+        StringBuilder strOUT = new StringBuilder("");
+        StringBuilder strSTATUS = new StringBuilder("");
+        StringBuilder strIND = new StringBuilder("");
         double P = 0;
         double wExray = 0;
         double BOLTZMAN = 1.38064E-23;
@@ -498,26 +495,33 @@ public class SAmodule {
         double minEExray = 0;
 
 
-        strOUT = String.format("\n%-50s\n", "Simulated annealing method") +
-                String.format("%-50s\n", "-------------------------------------------------------------------") +
-                String.format("   %-50s%12d\n", "Number of fragments: ", FRAG.getFragMass().size()) +
-                String.format("   %-50s%12d\n", "Number of used reflections: ", HKL.getHKL().size()) +
-                String.format("   %-50s%12d\n", "Number of parameters: ", this.ParametersList.length) +
-                String.format("%-50s\n", "-------------------------------------------------------------------");
-        System.out.print(strOUT);
+        strOUT.append(String.format("\n%-50s\n", "Simulated annealing method"));
+        strOUT.append(String.format("%-50s\n", "+-----------------------------------------------------------------+"));
+        strOUT.append(String.format("|  %-50s%12d |\n", "Number of fragments: ", FRAG.getFragMass().size()));
+        strOUT.append(String.format("|  %-50s%12d |\n", "Number of used reflections: ", HKL.getHKL().size()));
+        strOUT.append(String.format("|  %-50s%12d |\n", "Number of parameters: ", this.ParametersList.length));
+        strOUT.append(String.format("%-50s\n", "+-----------------------------------------------------------------+"));
+        System.out.print(strOUT.toString());
+        strOUT.setLength(0);
         System.out.println("Running...\n");
 
         if (this.ParametersList.length == 0) {
             E.OPT = "Xr1Re";
             E.calcEnergy(FRAG);
-            strOUT = String.format(" %-30s= %-12.3f\n", "R-factor (with scale)", E.RI) +
-                    String.format(" %-30s= %-12.3f\n", "R-factor (without scale)", E.RII) +
-                    String.format(" %-30s= %-12.3f\n", "R-factor (with weights)", E.RIII) +
-                    String.format(" %-30s= %-12e\n", "Xray part of minimum E", E.Exray) +
-                    String.format(" %-30s= %-12e\n", "Chem part of minimum E", E.Erest) +
-                    String.format(" %-30s= %-12e\n", "Energy", E.E) +
-                    String.format(" %-30s= %-12e\n", "Penalty function", E.Epenalty);
+            E.printInfo();
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (S) - RI", E.RI));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (C) - RII", E.RII));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (W) - RIII", E.RIII));
+            strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor - RIV", E.RIV));
+            strOUT.append(String.format(" %-30s= %-12e\n", "Chem part of minimum E", E.Erest));
+            strOUT.append(String.format(" %-30s= %-12e\n", "Energy", E.E));
+            strOUT.append(String.format(" %-30s= %-12e\n", "Penalty function", E.Epenalty));
             System.out.print("\n" + strOUT + "\n");
+            strOUT.setLength(0);
+            strOUT.append(String.format("\n%-50s\n", "-------------------------------------------------------------------"));
+            System.out.print(strOUT);
+            System.out.print("Done.\n");
+            FRAG.printFragsWithSym(SYM);
             System.exit(0);
         }
 
@@ -535,7 +539,7 @@ public class SAmodule {
             }
             System.out.print("\r\r");
         } else {
-            randomizeParametersInitial(FRAG, SASETTINGS.FIRST_RANDOMIZATION);
+            randomizeParametersInitial(this.CELL, FRAG, SASETTINGS.FIRST_RANDOMIZATION);
         }
         FRAG.printFrags();
         FragmentData FRAG_I = (FragmentData) deepClone(FRAG);
@@ -552,7 +556,7 @@ public class SAmodule {
             numDecreases = 0;
             numDecreasesGlobal = 0;
             numDecreasesLocal = 0;
-            strIND = "";
+            strIND.setLength(0);
 
             statModGsqExray.clear();
             statModGsqErest.clear();
@@ -566,6 +570,7 @@ public class SAmodule {
             FRAG_II = null;
             FRAG_II = (FragmentData) deepClone(FRAG);
             E.OPT = sumOptions(opt);
+            E.improveK(FRAG_II);
             E.calcEnergy(FRAG_II);
             statE.add(E.E);
             statEglobal.add(E.E);
@@ -574,13 +579,19 @@ public class SAmodule {
             minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
 
 
-
-
             for (int iteration = 0; iteration < itemTemperatureItem.cycleIterations; iteration++) {
-                strSTATUS = "";
-                strOUT = "";
+                strSTATUS.setLength(0);
+                strOUT.setLength(0);
+
+
+                strOUT.append(String.format(" %s: %d\n", "Iteration number", ++iterationNumber));
+                strOUT.append(String.format(" %-30s= %-12e\n", "T", itemTemperatureItem.cycleT));
+                strOUT.append(String.format(" %-30s= %-12d\n", "Cycles", itemTemperatureItem.cycleIterations));
+
+
+
                 if (itemTemperatureItem.cycleOpt.contains("S")) {
-                    strSTATUS += "Skipping loop, ";
+                    strSTATUS.append("Skipping loop, ");
                     break;
                 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -606,8 +617,8 @@ public class SAmodule {
                 if (itemTemperatureItem.cycleOpt.contains("Xr") || itemTemperatureItem.cycleOpt.contains("Re")) {
                     if (itemTemperatureItem.cycleOpt.contains("B")) {
                         kB = calcBolzman(statE, itemTemperatureItem.cycleT, SASETTINGS.P_FOR_KB);
-                        strSTATUS += "Bolzman constant optimization, ";
-                        strOUT += String.format(" %-30s= %-12e\n", "Bolzman constant", kB);
+                        strSTATUS.append("Bolzman constant optimization, ");
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Bolzman constant", kB));
                     }
                 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -616,24 +627,24 @@ public class SAmodule {
                         if (itemTemperatureItem.cycleOpt.contains("W")) {
                             wExray = calcW(statModGsqExray, statModGsqErest);
                             E.improvewExray(wExray);
-                            strSTATUS += "Weights calculation, ";
-                            strOUT += String.format(" %-30s= %-12e\n", "Exray weight w", wExray);
+                            strSTATUS.append("Weights calculation, ");
+                            strOUT.append(String.format(" %-30s= %-12e\n", "Exray weight w", wExray));
                         }
                     } else {
                         wExray = 0;
                         E.improvewExray(wExray);
-                        strSTATUS += "Dynamics simulation only, ";
+                        strSTATUS.append("Dynamics simulation only, ");
                     }
                 }
 //----------------------------------------------------------------------------------------------------------------------
                 if ((itemTemperatureItem.cycleOpt.contains("D") || itemTemperatureItem.cycleOpt.contains("J"))) {
 
                     if (itemTemperatureItem.cycleOpt.contains("DJ")) {
-                        strSTATUS += "SA full, ";
+                        strSTATUS.append("SA full, ");
                     } else if (itemTemperatureItem.cycleOpt.contains("D")) {
-                        strSTATUS += "Decreases only, ";
+                        strSTATUS.append("Decreases only, ");
                     } else if (itemTemperatureItem.cycleOpt.contains("J")) {
-                        strSTATUS += "Jumps only, ";
+                        strSTATUS.append("Jumps only, ");
                     }
 
                     if (E.E < minEglobal) {
@@ -644,14 +655,15 @@ public class SAmodule {
                         RII = E.RII;
                         RIII = E.RIII;
                         numDecreasesGlobal++;
-                        strIND = String.format(" %05d", numDecreasesGlobal) +
-                                String.format(" RI=%-4.2f", RI) +
-                                String.format(" RII=%-4.2f", RII) +
-                                String.format(" RIII=%-4.2f", RIII);
+                        strIND.setLength(0);
+                        strIND.append(String.format(" %05d", numDecreasesGlobal));
+                        strIND.append(String.format(" RI=%-4.2f", E.RI));
+                        strIND.append(String.format(" RII=%-4.2f", E.RII));
+                        strIND.append(String.format(" RIII=%-4.2f", E.RIII));
+                        strIND.append(String.format(" RIV=%-4.2f", E.RIV));
                         FRAG.printFrags();
                         if (!this.resultFileName.equals("") && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
                             try {
-//                                System.out.print(" SAVE");
                                 saveObject(FRAG, this.resultFileName);
                             } catch (IOException e) {
                             }
@@ -684,19 +696,18 @@ public class SAmodule {
                         }
                     }
 
-                    strSTATUS += "Minima of E searching, ";
-                    strOUT +=
-                            String.format(" %-30s= %-12d\n", "Local jumps", numJumps) +
-                                    String.format(" %-30s= %-12d\n", "Local decreases:", numDecreasesLocal) +
-                                    String.format(" %-30s= %-12d\n", "Global decreases:", numDecreasesGlobal) +
-                                    String.format(" %-30s= %-12e\n", "Mininmum E", minE);
-                    if (RI != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (with scale)", RI);
-                    if (RII != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (without scale)", RII);
-                    if (RIII != 0) strOUT += String.format(" %-30s= %-12.3f\n", "R-factor (with weights)", RIII);
+                    strSTATUS.append("Minima of E searching, ");
+                    strOUT.append(String.format(" %-30s= %-12d\n", "Local jumps", numJumps));
+                    strOUT.append(String.format(" %-30s= %-12d\n", "Local decreases:", numDecreasesLocal));
+                    strOUT.append(String.format(" %-30s= %-12d\n", "Global decreases:", numDecreasesGlobal));
+                    strOUT.append(String.format(" %-30s= %-12e\n", "Mininmum E", minE));
+                    if (RI != 0) strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (with scale)", RI));
+                    if (RII != 0) strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (without scale)", RII));
+                    if (RIII != 0) strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (with weights)", RIII));
                     if (minEExray != 0)
-                        strOUT += String.format(" %-30s= %-12e\n", "Xray part of minimum E", minEExray);
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Xray part of minimum E", minEExray));
                     if (minEErest != 0)
-                        strOUT += String.format(" %-30s= %-12e\n", "Chem part of minimum E", minEErest);
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Chem part of minimum E", minEErest));
 //----------------------------------------------------------------------------------------------------------------------
                 }
                 System.out.print("\r" +
@@ -706,16 +717,11 @@ public class SAmodule {
                         "% " + strIND);
             }
 //----------------------------------------------------------------------------------------------------------------------
-            strOUT = strSTATUS.substring(0, strSTATUS.length() - 2) + ":\n" +
-                    String.format(" %s: %d\n", "Iteration number", ++iterationNumber) +
-                    String.format(" %-30s= %-12e\n", "T", itemTemperatureItem.cycleT) +
-                    String.format(" %-30s= %-12d\n", "Cycles", itemTemperatureItem.cycleIterations) +
-                    strOUT;
             System.out.print("\r                    \r");
-            System.out.print("\n" + strOUT + "\n");
+            System.out.print("\n" + strSTATUS.substring(0, strSTATUS.length() - 2) + ":\n" +  strOUT + "\n");
         }
 
-        strOUT = String.format("%-50s\n", "-------------------------------------------------------------------");
+        strOUT.append(String.format("%-50s\n", "-------------------------------------------------------------------"));
         System.out.print(strOUT);
         System.out.print("Done\n");
     }

@@ -682,7 +682,7 @@ public class MoRmodule {
             }
             System.out.print("\r\r");
         } else {
-            randomizeParameters(this.CELL, FRAG, MORSETTINGS.FIRST_RANDOMIZATION);
+            randomizeParametersInitial(this.CELL, FRAG, MORSETTINGS.FIRST_RANDOMIZATION);
         }
         FRAG.printFrags();
 
