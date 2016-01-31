@@ -51,7 +51,6 @@ public class MSS {
         if (METHOD.equals("SA")) {
             SAmodule SAROUTINE = new SAmodule(
                     CELL,
-                    SYM,
                     FRAG,
                     HKL,
                     E,

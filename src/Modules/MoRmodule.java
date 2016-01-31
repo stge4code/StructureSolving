@@ -617,6 +617,7 @@ public class MoRmodule {
 
         int numDecreasesGlobal = 0;
         double minEcore = 0;
+        double minE = 0;
 
 
         strOUT.append(String.format("\n%-50s\n", "Method of raviness"));
@@ -718,7 +719,7 @@ public class MoRmodule {
             statEcore.add(E.Ecore);
             statK.add(E.getK());
 
-            if (E.Ecore < minEcore) {
+            if (E.E < minE) {
                 numDecreasesGlobal++;
                 strIND.setLength(0);
                 strIND.append(String.format(" %05d", numDecreasesGlobal));
@@ -737,6 +738,7 @@ public class MoRmodule {
             //minEcore = statEcore.get(statEcore.indexOf(Collections.min(statEcore)));
             //minEcore = (minEcore == 0) ? statEcore.get(0) : Math.min(statEcore.get(i), minEcore);
             minEcore = (minEcore == 0) ? E.Ecore : Math.min(E.Ecore, minEcore);
+            minE = (minE == 0) ? E.E : Math.min(E.E, minE);
 
 
             double[] ModsGparts = findModsGEparts(FRAG_I, E);

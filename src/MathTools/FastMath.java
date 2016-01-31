@@ -321,11 +321,11 @@ public final class FastMath {
     }
 
 
-    private static double randomizeDouble(String OPT, double RANGE) {
+    public static double randomizeDouble(String OPT, double RANGE) {
         return randomizeDouble(OPT, RANGE, 1E3);
     }
 
-    private static double randomizeDouble(String OPT, double RANGE, double stepShiftInt) {
+    public static double randomizeDouble(String OPT, double RANGE, double stepShiftInt) {
         Random randomVal = new Random();
         if (OPT.contains("SYM")) {
             return (double) ((randomVal.nextInt((int) stepShiftInt) + 1) / stepShiftInt - .5) * RANGE;

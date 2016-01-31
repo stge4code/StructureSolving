@@ -14,9 +14,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static MathTools.FastMath.addToParameters;
-import static MathTools.FastMath.generateParametersList;
-import static MathTools.FastMath.randomizeParametersInitial;
+import static MathTools.FastMath.*;
 import static Utilities.ObjectsUtilities.*;
 
 /**
@@ -35,7 +33,7 @@ public class SAmodule {
     private int[] ParametersList;
     private String resultFileName;
 
-    //----------------------------------------------------------------------------------------------------------------------
+
     public class TemperatureData {
         private String temperatureDataFilename = "";
         private ArrayList<TemperatureItem> tempRegime = new ArrayList<>();
@@ -61,14 +59,6 @@ public class SAmodule {
                     //throw new RuntimeException(s2n);
                 }
             }
-        }
-
-        public String getTemperatureDataFilename() {
-            return temperatureDataFilename;
-        }
-
-        public void setTemperatureDataFilename(String cycleDataFilename) {
-            this.temperatureDataFilename = cycleDataFilename;
         }
 
         public List<TemperatureItem> getREGIME() {
@@ -139,15 +129,14 @@ public class SAmodule {
                         }
                         allMatches.clear();
                     }
-                } catch (NumberFormatException s2nAnnealingSettings) {
+                } catch (NumberFormatException e) {
                 }
             }
         }
     }
-//----------------------------------------------------------------------------------------------------------------------
+
 
     public SAmodule(UnitCell CELL,
-                    Symmetry SYM,
                     FragmentData FRAG,
                     DiffractionData HKL,
                     Energy E,
@@ -221,187 +210,18 @@ public class SAmodule {
 
     }
 
-    private double randomizeDouble(String OPT, double RANGE) {
-        Random randomVal = new Random();
-        if (OPT.contains("SYM")) {
-            return (double) ((randomVal.nextInt((int) SASETTINGS.RANDOMIZE_ACCURACY) + 1) / SASETTINGS.RANDOMIZE_ACCURACY - .5) * RANGE;
-        } else if (OPT.contains("ASYM")) {
-            return (double) ((randomVal.nextInt((int) SASETTINGS.RANDOMIZE_ACCURACY) + 1) / SASETTINGS.RANDOMIZE_ACCURACY) * RANGE;
-        }
-        return 0;
-    }
 
-    /*public int findNumParameters(FragmentData FRAG) {
-        int parametersNum = 0;
-        for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
-            Fragment itemFRAG = iterFRAG.next();
-            if (itemFRAG.getFragOPT().contains("T")) parametersNum += 3;
-            if (itemFRAG.getFragOPT().contains("R")) parametersNum += 3;
-            if (itemFRAG.getFragOPT().contains("O")) parametersNum += 1;
-            if (itemFRAG.getFragOPT().contains("U")) parametersNum += 1;
-        }
-        return parametersNum;
-    }
-
-
-    public void randomizeParametersInitial(FragmentData FRAG, int NUM) {
-
-        double dX = 0, dY = 0, dZ = 0;
-        double dPhi1 = 0, dPhi2 = 0, dTheta = 0;
-        double dO = 0, dU = 0;
-
-        for (int randNUM = 0; randNUM < NUM; randNUM++) {
-            for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
-                Fragment itemFRAG = iterFRAG.next();
-                dX = dY = dZ = 0;
-                dPhi1 = dPhi2 = dTheta = 0;
-                dO = dU = 0;
-                if (itemFRAG.getFragOPT().contains("T")) {
-                    dX = randomizeDouble("SYM", .5);
-                    dY = randomizeDouble("SYM", .5);
-                    dZ = randomizeDouble("SYM", .5);
-                }
-                if (itemFRAG.getFragOPT().contains("R")) {
-                    dPhi1 = randomizeDouble("SYM", Math.PI);
-                    dPhi2 = randomizeDouble("SYM", Math.PI);
-                    dTheta = randomizeDouble("SYM", Math.PI);
-                }
-                itemFRAG.fragModifyParameters(CELL, dX, dY, dZ, dPhi1, dPhi2, dTheta, dO, dU);
-            }
-        }
-    }*/
 
 
     public double randomizeParameters(FragmentData FRAG) {
         Random randomVal = new Random();
         int parametersChoice = randomVal.nextInt(this.ParametersList.length);
-        double Delta = randomizeDouble("SYM", SASETTINGS.MAX_PARAMETERS_STEP);
+        double Delta = randomizeDouble("SYM", this.SASETTINGS.MAX_PARAMETERS_STEP);
         addToParameters(this.CELL, FRAG, this.ParametersList, parametersChoice, Delta);
         return Delta;
     }
 
-/*
-    public double getParameters(FragmentData FRAG, int numPAR) {
-        Fragment itemFRAG = FRAG.getFragMass().get((int) (this.ParametersList[numPAR] / 10));
-        switch ((int) (this.ParametersList[numPAR] % 10)) {
-            case 1:
-                return itemFRAG.getFragX();
-            case 2:
-                return itemFRAG.getFragY();
-            case 3:
-                return itemFRAG.getFragZ();
-            case 4:
-                return itemFRAG.getFragPhi1();
-            case 5:
-                return itemFRAG.getFragPhi2();
-            case 6:
-                return itemFRAG.getFragTheta();
-            case 7:
-                return itemFRAG.getFragO();
-            case 8:
-                return itemFRAG.getFragU();
-        }
-        return 0;
-    }
 
-    public void setParameters(FragmentData FRAG, int numPAR, double PAR) {
-        Fragment itemFRAG = FRAG.getFragMass().get((int) (this.ParametersList[numPAR] / 10));
-        switch ((int) (this.ParametersList[numPAR] % 10)) {
-            case 1:
-                itemFRAG.setFragX(PAR);
-            case 2:
-                itemFRAG.setFragY(PAR);
-            case 3:
-                itemFRAG.setFragZ(PAR);
-            case 4:
-                itemFRAG.setFragPhi1(PAR);
-            case 5:
-                itemFRAG.setFragPhi2(PAR);
-            case 6:
-                itemFRAG.setFragTheta(PAR);
-            case 7:
-                itemFRAG.setFragO(PAR);
-            case 8:
-                itemFRAG.setFragU(PAR);
-        }
-    }
-
-    public void generateParametersList(FragmentData FRAG) {
-        int[] gPL = new int[findNumParameters(FRAG)];
-        int i = 0;
-        int k = 0;
-        for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
-            Fragment itemFRAG = iterFRAG.next();
-            if (itemFRAG.getFragOPT().contains("T")) {
-                gPL[k++] = i * 10 + 1;
-                gPL[k++] = i * 10 + 2;
-                gPL[k++] = i * 10 + 3;
-            }
-            if (itemFRAG.getFragOPT().contains("R")) {
-                gPL[k++] = i * 10 + 4;
-                gPL[k++] = i * 10 + 5;
-                gPL[k++] = i * 10 + 6;
-            }
-            if (itemFRAG.getFragOPT().contains("O")) {
-                gPL[k++] = i * 10 + 7;
-            }
-            if (itemFRAG.getFragOPT().contains("U")) {
-                gPL[k++] = i * 10 + 8;
-            }
-            i++;
-        }
-        this.ParametersList = gPL;
-    }
-
-
-    public void addToParameters(FragmentData FRAG, double dPar) {
-        for (int i = 0; i < this.ParametersList.length; i++) addToParameters(FRAG, i, dPar);
-    }
-
-    public void addToParameters(FragmentData FRAG, double[] dPar) {
-        for (int i = 0; i < this.ParametersList.length; i++) addToParameters(FRAG, i, dPar[i]);
-    }
-
-    public void addToParameters(FragmentData FRAG, int PAR, double dPar) {
-        double dX = 0;
-        double dY = 0;
-        double dZ = 0;
-        double dPhi1 = 0;
-        double dPhi2 = 0;
-        double dTheta = 0;
-        double dO = 0;
-        double dU = 0;
-        Fragment itemFRAG = FRAG.getFragMass().get((int) this.ParametersList[PAR] / 10);
-        switch ((int) this.ParametersList[PAR] % 10) {
-            case 1:
-                dX = dPar;
-                break;
-            case 2:
-                dY = dPar;
-                break;
-            case 3:
-                dZ = dPar;
-                break;
-            case 4:
-                dPhi1 = dPar;
-                break;
-            case 5:
-                dPhi2 = dPar;
-                break;
-            case 6:
-                dTheta = dPar;
-                break;
-            case 7:
-                dO = dPar;
-                break;
-            case 8:
-                dU = dPar;
-                break;
-            default:
-                break;
-        }
-        itemFRAG.fragModifyParameters(this.CELL, dX, dY, dZ, dPhi1, dPhi2, dTheta, dO, dU);
-    }*/
 
 
     public String sumOptions(List<String> opt) {
@@ -500,13 +320,14 @@ public class SAmodule {
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of fragments: ", FRAG.getFragMass().size()));
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of used reflections: ", HKL.getHKL().size()));
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of parameters: ", this.ParametersList.length));
+        strOUT.append(String.format("|  %-50s%12.2e |\n", "Randomization step: ", this.SASETTINGS.MAX_PARAMETERS_STEP));
         strOUT.append(String.format("%-50s\n", "+-----------------------------------------------------------------+"));
         System.out.print(strOUT.toString());
         strOUT.setLength(0);
         System.out.println("Running...\n");
 
         if (this.ParametersList.length == 0) {
-            E.OPT = "Xr1Re";
+            E.OPT = "Xr1";
             E.calcEnergy(FRAG);
             E.printInfo();
             strOUT.append(String.format(" %-30s= %-12.3f\n", "R-factor (S) - RI", E.RI));
@@ -534,7 +355,7 @@ public class SAmodule {
                 }
                 FRAG = (FragmentData) deepClone(FRAG_LOAD);
                 FRAG_LOAD = null;
-            } catch (IOException | ClassNotFoundException e1) {
+            } catch (IOException | ClassNotFoundException e) {
 
             }
             System.out.print("\r\r");
@@ -557,7 +378,7 @@ public class SAmodule {
             numDecreasesGlobal = 0;
             numDecreasesLocal = 0;
             strIND.setLength(0);
-
+            iterationNumber++;
             statModGsqExray.clear();
             statModGsqErest.clear();
             statE.clear();
@@ -565,63 +386,67 @@ public class SAmodule {
 
             if (itemTemperatureItem.cycleOpt.contains("Xr1")) opt.add("Xr1");
             if (itemTemperatureItem.cycleOpt.contains("Xr2")) opt.add("Xr2");
-            if (itemTemperatureItem.cycleOpt.contains("Re")) opt.add("Re");
+            if (itemTemperatureItem.cycleOpt.contains("Xr3")) opt.add("Xr3");
+            if (itemTemperatureItem.cycleOpt.contains("Xr4")) opt.add("Xr4");
+            if (itemTemperatureItem.cycleOpt.contains("Xr5")) opt.add("Xr5");
+            if (itemTemperatureItem.cycleOpt.contains("Re1")) opt.add("Re1");
 
-            FRAG_II = null;
+
             FRAG_II = (FragmentData) deepClone(FRAG);
             E.OPT = sumOptions(opt);
-            E.improveK(FRAG_II);
             E.calcEnergy(FRAG_II);
+            FRAG.printFrags();
+            E.printInfo();
+
+            if (!this.resultFileName.equals("") && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
+                try {
+                    saveObject(FRAG, this.resultFileName);
+                } catch (IOException e) {
+                }
+            }
+
             statE.add(E.E);
             statEglobal.add(E.E);
             statK.add(E.getK());
+
             minE = statE.get(statE.indexOf(Collections.min(statE)));
             minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
 
+            if (itemTemperatureItem.cycleOpt.contains("Xr")) {
+                if (itemTemperatureItem.cycleOpt.contains("K")) {
+                    E.improveK(FRAG_II);
+                }
+            }
+
+            if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_II, E, 0, "*");
 
             for (int iteration = 0; iteration < itemTemperatureItem.cycleIterations; iteration++) {
+
                 strSTATUS.setLength(0);
                 strOUT.setLength(0);
 
-
-                strOUT.append(String.format(" %s: %d\n", "Iteration number", ++iterationNumber));
+                strOUT.append(String.format(" %-30s->%d\n", "Iteration number", iterationNumber));
                 strOUT.append(String.format(" %-30s= %-12e\n", "T", itemTemperatureItem.cycleT));
                 strOUT.append(String.format(" %-30s= %-12d\n", "Cycles", itemTemperatureItem.cycleIterations));
-
 
 
                 if (itemTemperatureItem.cycleOpt.contains("S")) {
                     strSTATUS.append("Skipping loop, ");
                     break;
                 }
-//----------------------------------------------------------------------------------------------------------------------
-                FRAG_I = null;
-                System.gc();
+
                 FRAG_I = (FragmentData) deepClone(FRAG_II);
-                double Delta = randomizeParameters(FRAG_I);
-                E.OPT = sumOptions(opt);
-                E.calcEnergy(FRAG_I);
-//----------------------------------------------------------------------------------------------------------------------
-                minE = statE.get(statE.indexOf(Collections.min(statE)));
-                minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
-                statE.add(E.E);
-                statEglobal.add(E.E);
-                if (Delta != 0) {
-                    statModGsqExray.add(Math.pow(E.Exray / Delta, 2));
-                }
-                if (Delta != 0) {
-                    statModGsqErest.add(Math.pow(E.Erest / Delta, 2));
-                }
-                statK.add(E.getK());
-//----------------------------------------------------------------------------------------------------------------------
-                if (itemTemperatureItem.cycleOpt.contains("Xr") || itemTemperatureItem.cycleOpt.contains("Re")) {
-                    if (itemTemperatureItem.cycleOpt.contains("B")) {
-                        kB = calcBolzman(statE, itemTemperatureItem.cycleT, SASETTINGS.P_FOR_KB);
-                        strSTATUS.append("Bolzman constant optimization, ");
-                        strOUT.append(String.format(" %-30s= %-12e\n", "Bolzman constant", kB));
+                double deltaParameters = randomizeParameters(FRAG_I);
+
+
+                if (itemTemperatureItem.cycleOpt.contains("Xr")) {
+                    if (itemTemperatureItem.cycleOpt.contains("K")) {
+                        strSTATUS.append("Scale factor calculation, ");
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Scale factor K", E.getK()));
                     }
                 }
-//----------------------------------------------------------------------------------------------------------------------
+
+
                 if (itemTemperatureItem.cycleOpt.contains("Re")) {
                     if (itemTemperatureItem.cycleOpt.contains("Xr")) {
                         if (itemTemperatureItem.cycleOpt.contains("W")) {
@@ -636,7 +461,32 @@ public class SAmodule {
                         strSTATUS.append("Dynamics simulation only, ");
                     }
                 }
-//----------------------------------------------------------------------------------------------------------------------
+
+
+                E.calcEnergy(FRAG_I);
+                minE = statE.get(statE.indexOf(Collections.min(statE)));
+                minEglobal = statEglobal.get(statEglobal.indexOf(Collections.min(statEglobal)));
+                statE.add(E.E);
+                statEglobal.add(E.E);
+
+
+
+                if (deltaParameters != 0) {
+                    statModGsqExray.add(Math.pow(E.Exray / deltaParameters, 2));
+                    statModGsqErest.add(Math.pow(E.Erest / deltaParameters, 2));
+                }
+
+
+                if (itemTemperatureItem.cycleOpt.contains("Xr") || itemTemperatureItem.cycleOpt.contains("Re")) {
+                    if (itemTemperatureItem.cycleOpt.contains("B")) {
+                        kB = calcBolzman(statE, itemTemperatureItem.cycleT, this.SASETTINGS.P_FOR_KB);
+                        strSTATUS.append("Bolzman constant optimization, ");
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Bolzman constant", kB));
+                    }
+                }
+
+
+
                 if ((itemTemperatureItem.cycleOpt.contains("D") || itemTemperatureItem.cycleOpt.contains("J"))) {
 
                     if (itemTemperatureItem.cycleOpt.contains("DJ")) {
@@ -661,38 +511,27 @@ public class SAmodule {
                         strIND.append(String.format(" RII=%-4.2f", E.RII));
                         strIND.append(String.format(" RIII=%-4.2f", E.RIII));
                         strIND.append(String.format(" RIV=%-4.2f", E.RIV));
-                        FRAG.printFrags();
-                        if (!this.resultFileName.equals("") && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
-                            try {
-                                saveObject(FRAG, this.resultFileName);
-                            } catch (IOException e) {
-                            }
-                        }
-
                     }
+
                     if (E.E < minE) {
                         FRAG_III = (FragmentData) deepClone(FRAG_I);
                         numDecreasesLocal++;
                     }
+
                     sizeE = statE.size();
                     deltaE = statE.get(sizeE - 1) - statE.get(sizeE - 2);
                     if (deltaE < 0) {
                         if (itemTemperatureItem.cycleOpt.contains("D")) {
-                            FRAG_II = null;
                             FRAG_II = (FragmentData) deepClone(FRAG_I);
                             numDecreases++;
-                            if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "*");
                         }
                     } else {
                         if (itemTemperatureItem.cycleOpt.contains("J")) {
                             P = Math.exp(-deltaE / (kB * itemTemperatureItem.cycleT));
                             if (P > Math.random()) {
-                                FRAG_II = null;
                                 FRAG_II = (FragmentData) deepClone(FRAG_I);
                                 numJumps++;
-                                if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "*");
                             }
-
                         }
                     }
 
@@ -708,7 +547,7 @@ public class SAmodule {
                         strOUT.append(String.format(" %-30s= %-12e\n", "Xray part of minimum E", minEExray));
                     if (minEErest != 0)
                         strOUT.append(String.format(" %-30s= %-12e\n", "Chem part of minimum E", minEErest));
-//----------------------------------------------------------------------------------------------------------------------
+
                 }
                 System.out.print("\r" +
                         strSTATUS.substring(0, strSTATUS.length() - 2) +
@@ -716,9 +555,9 @@ public class SAmodule {
                         String.format("%2.0f", Double.valueOf(100 * (iteration + 1) / itemTemperatureItem.cycleIterations)) +
                         "% " + strIND);
             }
-//----------------------------------------------------------------------------------------------------------------------
-            System.out.print("\r                    \r");
-            System.out.print("\n" + strSTATUS.substring(0, strSTATUS.length() - 2) + ":\n" +  strOUT + "\n");
+
+            System.out.print("\r");
+            System.out.print("\n" + strOUT + "\n");
         }
 
         strOUT.append(String.format("%-50s\n", "-------------------------------------------------------------------"));
