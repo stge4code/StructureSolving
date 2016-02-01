@@ -44,6 +44,7 @@ public class DiffractionData {
         private class SortRules {
             public ArrayList<String> l = new ArrayList<>();
             public ArrayList<String> e = new ArrayList<>();
+            public ArrayList<String> ne = new ArrayList<>();
             public ArrayList<String> g = new ArrayList<>();
         }
 
@@ -55,6 +56,7 @@ public class DiffractionData {
             for (String itemS : allMatchesS) {
                 if (itemS.substring(0, 1).equals(">")) SORT.g.add(itemS.substring(1));
                 if (itemS.substring(0, 1).equals("=")) SORT.e.add(itemS.substring(1));
+                if (itemS.substring(0, 2).equals("!=")) SORT.ne.add(itemS.substring(2));
                 if (itemS.substring(0, 1).equals("<")) SORT.l.add(itemS.substring(1));
             }
             return SORT;
@@ -149,17 +151,17 @@ public class DiffractionData {
             System.out.print("\rMerging reflections...");
             for (char mch : DIFDATASETTINGS.MERGE.toCharArray()) {
                 switch (mch) {
-                    case 'F' :
+                    case 'F':
                         this.HKL = mergeFriedelReflections(this.HKL);
                         break;
-                    case 'U' :
+                    case 'U':
                         this.HKL = mergeUniqueReflections(this.HKL);
                         break;
-                    case 'S' :
+                    case 'S':
                         this.HKL = mergeSameScatteringReflections(this.HKL);
                         break;
-                   default:
-                       break;
+                    default:
+                        break;
                 }
             }
         }
@@ -168,76 +170,76 @@ public class DiffractionData {
             System.out.print("\rOrdering reflections...");
             for (char mch : DIFDATASETTINGS.ORDER.toCharArray()) {
                 switch (mch) {
-                    case 'D' :
+                    case 'D':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.scatvect > b.scatvect)? 1 : ((a.scatvect == b.scatvect) ? 0 : -1));
+                                    return ((a.scatvect > b.scatvect) ? 1 : ((a.scatvect == b.scatvect) ? 0 : -1));
                                 });
                         break;
-                    case 'd' :
+                    case 'd':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.scatvect > b.scatvect)? -1 : ((a.scatvect == b.scatvect) ? 0 : 1));
+                                    return ((a.scatvect > b.scatvect) ? -1 : ((a.scatvect == b.scatvect) ? 0 : 1));
                                 });
                         break;
-                    case 'H' :
+                    case 'H':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.h > b.h)? -1 : ((a.h == b.h) ? 0 : 1));
+                                    return ((a.h > b.h) ? -1 : ((a.h == b.h) ? 0 : 1));
                                 });
                         break;
-                    case 'h' :
+                    case 'h':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.h > b.h)? 1 : ((a.h == b.h) ? 0 : -1));
+                                    return ((a.h > b.h) ? 1 : ((a.h == b.h) ? 0 : -1));
                                 });
                         break;
-                    case 'L' :
+                    case 'L':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.l > b.l)? -1 : ((a.l == b.l) ? 0 : 1));
+                                    return ((a.l > b.l) ? -1 : ((a.l == b.l) ? 0 : 1));
                                 });
                         break;
-                    case 'l' :
+                    case 'l':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.l > b.l)? 1 : ((a.l == b.l) ? 0 : -1));
+                                    return ((a.l > b.l) ? 1 : ((a.l == b.l) ? 0 : -1));
                                 });
                         break;
-                    case 'K' :
+                    case 'K':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.k > b.k)? -1 : ((a.k == b.k) ? 0 : 1));
+                                    return ((a.k > b.k) ? -1 : ((a.k == b.k) ? 0 : 1));
                                 });
                         break;
-                    case 'k' :
+                    case 'k':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.k > b.k)? 1 : ((a.k == b.k) ? 0 : -1));
+                                    return ((a.k > b.k) ? 1 : ((a.k == b.k) ? 0 : -1));
                                 });
                         break;
-                    case 'I' :
+                    case 'I':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.I > b.I)? -1 : ((a.I == b.I) ? 0 : 1));
+                                    return ((a.I > b.I) ? -1 : ((a.I == b.I) ? 0 : 1));
                                 });
                         break;
-                    case 'i' :
+                    case 'i':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.I > b.I)? 1 : ((a.I == b.I) ? 0 : -1));
+                                    return ((a.I > b.I) ? 1 : ((a.I == b.I) ? 0 : -1));
                                 });
                         break;
-                    case 'S' :
+                    case 'S':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.sigmaI > b.sigmaI)? -1 : ((a.sigmaI == b.sigmaI) ? 0 : 1));
+                                    return ((a.sigmaI > b.sigmaI) ? -1 : ((a.sigmaI == b.sigmaI) ? 0 : 1));
                                 });
                         break;
-                    case 's' :
+                    case 's':
                         Collections.sort(this.HKL,
                                 (ReciprocalItem a, ReciprocalItem b) -> {
-                                    return ((a.sigmaI > b.sigmaI)? 1 : ((a.sigmaI == b.sigmaI) ? 0 : -1));
+                                    return ((a.sigmaI > b.sigmaI) ? 1 : ((a.sigmaI == b.sigmaI) ? 0 : -1));
                                 });
                         break;
                     default:
@@ -260,12 +262,12 @@ public class DiffractionData {
         return IMin;
     }
 
-    private void findHKLParameters(){
+    private void findHKLParameters() {
         double IMin = this.HKL.get(0).I;
         double IMax = 0;
         for (ReciprocalItem itemHKL : this.HKL) {
-                IMin = Math.min(IMin, itemHKL.I);
-                IMax = Math.max(IMax, itemHKL.I);
+            IMin = Math.min(IMin, itemHKL.I);
+            IMax = Math.max(IMax, itemHKL.I);
         }
         this.IMax = IMax;
         this.IMin = IMin;
@@ -286,7 +288,9 @@ public class DiffractionData {
                     itemHKLm.I += itemHKL.I;
                     itemHKLm.I /= (i_ + 1.0);
                     itemHKLm.sigmaI *= i_;
-                    itemHKLm.sigmaI += itemHKL.sigmaI;
+                    itemHKLm.sigmaI = Math.pow(itemHKLm.sigmaI, 2);
+                    itemHKLm.sigmaI += Math.pow(itemHKL.sigmaI, 2);
+                    itemHKLm.sigmaI = Math.sqrt(itemHKLm.sigmaI);
                     itemHKLm.sigmaI /= (i_ + 1.0);
                     break;
                 }
@@ -314,7 +318,9 @@ public class DiffractionData {
                     itemHKLm.I += itemHKL.I;
                     itemHKLm.I /= (i_ + 1.0);
                     itemHKLm.sigmaI *= i_;
-                    itemHKLm.sigmaI += itemHKL.sigmaI;
+                    itemHKLm.sigmaI = Math.pow(itemHKLm.sigmaI, 2);
+                    itemHKLm.sigmaI += Math.pow(itemHKL.sigmaI, 2);
+                    itemHKLm.sigmaI = Math.sqrt(itemHKLm.sigmaI);
                     itemHKLm.sigmaI /= (i_ + 1.0);
                     break;
                 }
@@ -361,7 +367,6 @@ public class DiffractionData {
     }
 
 
-
     private ArrayList<ReciprocalItem> sortReflections(UnitCell CELL, List<ReciprocalItem> unSorted) {
         ArrayList<ReciprocalItem> sorted = new ArrayList<>();
         for (ReciprocalItem itemHKL : unSorted) {
@@ -377,88 +382,104 @@ public class DiffractionData {
         try {
 
             for (String S : DIFDATASETTINGS.SORT_I.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I < checkvalue);
+                condition = condition & (HKL.I < FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_I.e) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I == checkvalue);
+                condition = condition & (HKL.I == FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_I.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I  > checkvalue);
+                condition = condition & (HKL.I > FastMath.eval(S));
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_ISI.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I / HKL.sigmaI < checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI < FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_ISI.e) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I / HKL.sigmaI == checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI == FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_ISI.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.I / HKL.sigmaI > checkvalue);
+                condition = condition & (HKL.I / HKL.sigmaI > FastMath.eval(S));
                 if (!condition) return false;
             }
             resolution = 1.0 / 2.0 / HKL.scatvect;
 
             for (String S : DIFDATASETTINGS.SORT_RES.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (resolution < checkvalue);
+
+                condition = condition & (resolution < FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_RES.e) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (resolution == checkvalue);
+
+                condition = condition & (resolution == FastMath.eval(S));
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_RES.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (resolution > checkvalue);
+
+                condition = condition & (resolution > FastMath.eval(S));
                 if (!condition) return false;
             }
-
             for (String S : DIFDATASETTINGS.SORT_H.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.h < checkvalue);
+                condition = condition & !(FastMath.eval((S)
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h > 0);
                 if (!condition) return false;
+
             }
             for (String S : DIFDATASETTINGS.SORT_H.e) {
                 if (S.contains("N")) {
                     boolean condition_temp = false;
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
-                                .replaceAll("N", "(" + Integer.toString(N)) + ")") - HKL.h == 0);
+                                .replaceAll("N", "(" + Integer.toString(N) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
-                } else if (S.contains("L") | S.contains("K")) {
-                    condition = condition & (FastMath.eval((S)
-                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")
-                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.h == 0);
                 } else {
-                    checkvalue = Double.valueOf(S).doubleValue();
-                    condition = condition & (HKL.h == checkvalue);
+                    condition = condition & (FastMath.eval((S)
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                     if (!condition) return false;
                 }
             }
-            for (String S : DIFDATASETTINGS.SORT_H.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.h > checkvalue);
-                if (!condition) return false;
+
+            for (String S : DIFDATASETTINGS.SORT_H.ne) {
+                if (S.contains("N")) {
+                    boolean condition_temp = false;
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
+                        condition_temp = condition_temp | (FastMath.eval((S)
+                                .replaceAll("N", "(" + Integer.toString(N) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
+                        if (condition_temp) break;
+                    }
+                    condition = condition & !condition_temp;
+                } else {
+                    condition = condition & !(FastMath.eval((S)
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
+                    if (!condition) return false;
+                }
 
             }
 
+            for (String S : DIFDATASETTINGS.SORT_H.g) {
+                condition = condition & (FastMath.eval((S)
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h < 0);
+                if (!condition) return false;
+            }
+
             for (String S : DIFDATASETTINGS.SORT_K.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.k < checkvalue);
+                condition = condition & !(FastMath.eval((S)
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k > 0);
                 if (!condition) return false;
 
             }
@@ -467,57 +488,101 @@ public class DiffractionData {
                     boolean condition_temp = false;
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
-                                .replaceAll("N", "(" + Integer.toString(N) + ")")) - HKL.k == 0);
+                                .replaceAll("H", "(" + Integer.toString(N) + ")")
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
-                } else if (S.contains("L") | S.contains("H")) {
+                } else {
                     condition = condition & (FastMath.eval((S)
                             .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
                             .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
-                } else {
-                    checkvalue = Double.valueOf(S).doubleValue();
-                    condition = condition & (HKL.k == checkvalue);
                     if (!condition) return false;
                 }
             }
+
+            for (String S : DIFDATASETTINGS.SORT_K.ne) {
+                if (S.contains("N")) {
+                    boolean condition_temp = false;
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
+                        condition_temp = condition_temp | (FastMath.eval((S)
+                                .replaceAll("N", "(" + Integer.toString(N) + ")")
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
+                        if (condition_temp) break;
+                    }
+                    condition = condition & !condition_temp;
+                } else {
+                    condition = condition & !(FastMath.eval((S)
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
+                    if (!condition) return false;
+                }
+
+            }
+
             for (String S : DIFDATASETTINGS.SORT_K.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.k > checkvalue);
+                condition = condition & (FastMath.eval((S)
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k < 0);
                 if (!condition) return false;
             }
 
-
             for (String S : DIFDATASETTINGS.SORT_L.l) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.l < checkvalue);
+                condition = condition & !(FastMath.eval((S)
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l > 0);
                 if (!condition) return false;
+
             }
             for (String S : DIFDATASETTINGS.SORT_L.e) {
                 if (S.contains("N")) {
                     boolean condition_temp = false;
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
-                                .replaceAll("N", "(" + Integer.toString(N) + ")")) - HKL.l == 0);
+                                .replaceAll("N", "(" + Integer.toString(N) + ")")
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
-                } else if (S.contains("H") | S.contains("K")) {
+                } else {
                     condition = condition & (FastMath.eval((S)
                             .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
                             .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
+                    if (!condition) return false;
+                }
+            }
+
+            for (String S : DIFDATASETTINGS.SORT_L.ne) {
+                if (S.contains("N")) {
+                    boolean condition_temp = false;
+                    for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
+                        condition_temp = condition_temp | (FastMath.eval((S)
+                                .replaceAll("N", "(" + Integer.toString(N) + ")")
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
+                        if (condition_temp) break;
+                    }
+                    condition = condition & !condition_temp;
                 } else {
-                    checkvalue = Double.valueOf(S).doubleValue();
-                    condition = condition & (HKL.l == checkvalue);
+                    condition = condition & !(FastMath.eval((S)
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                     if (!condition) return false;
                 }
 
             }
+
             for (String S : DIFDATASETTINGS.SORT_L.g) {
-                checkvalue = Double.valueOf(S).doubleValue();
-                condition = condition & (HKL.l > checkvalue);
+                condition = condition & (FastMath.eval((S)
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l < 0);
                 if (!condition) return false;
             }
+
+
         } catch (NumberFormatException e) {
             System.out.println("Incorrect input files...");
             System.exit(0);

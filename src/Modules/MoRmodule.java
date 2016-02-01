@@ -52,25 +52,26 @@ public class MoRmodule {
         private String ravinessSettingsFilename;
         private int N = 0;
         private int REFRESH = 0;
-        private double h = 0;
-        private double c1 = 0;
-        private double c2 = 0;
-        private double c3 = 0;
-        private double Epsilon1 = 0;
-        private int n = 0;
-        private double Epsilon2 = 0;
-        private double Delta2 = 0;
+        private double h = 2E-1;
+        private double c1 = 1.0E-3;
+        private double c2 = 1.0E-3;
+        private double c3 = 1.0E-3;
+        private double Epsilon1 = 1.0E-3;
+        private double Epsilon2 = 1.0E-3;
         private double Delta = 0;
         private double Delta1 = 0;
+        private double Delta2 = 0;
         private int N_TMIN = 100;
-        private int FIRST_RANDOMIZATION = 0;
-        private int MINIMA_SEARCH_METHOD = 0;
+        private int FIRST_RANDOMIZATION = 50;
+        private int MINIMA_SEARCH_METHOD = 1;
+        private int N_FIB = 10;
         private String SAVE_BEST_RESULT = "N";
         private int G_FIND_DERIVATIVE = 3;
-        private int PRINT_FRAGMENT = 0;
+        private int PRINT_FRAGMENT = 1;
         private String Eopt = "";
         private double wExray = -1.0;
         private double wEcore = -1.0;
+        private double K = -1.0;
 
         //----------------------------------------------------------------------------------------------------------------------
         private RavinessSettings(String ravinessDataFilename) {
@@ -89,9 +90,9 @@ public class MoRmodule {
                         case "REFRESH":
                             this.REFRESH = Integer.parseInt(allMatches.get(1));
                             break;
-                        case "n":
+                        case "N_FIB":
                             int tmp = Integer.parseInt(allMatches.get(1));
-                            this.n = (tmp > 99) ? 99 : tmp;
+                            this.N_FIB = (tmp > 99) ? 99 : tmp;
                             break;
                         case "h":
                             this.h = Double.valueOf(allMatches.get(1)).doubleValue();
@@ -124,17 +125,24 @@ public class MoRmodule {
                             this.Eopt = allMatches.get(1);
                             break;
                         case "wExray":
-                            if (allMatches.get(1).contains("A")) {
+                            if (allMatches.get(1).contains("W")) {
                                 this.wExray = -1;
                             } else {
                                 this.wExray = Double.valueOf(allMatches.get(1)).doubleValue();
                             }
                             break;
                         case "wEcore":
-                            if (allMatches.get(1).contains("A")) {
+                            if (allMatches.get(1).contains("W")) {
                                 this.wEcore = -1;
                             } else {
                                 this.wEcore = Double.valueOf(allMatches.get(1)).doubleValue();
+                            }
+                            break;
+                        case "K":
+                            if (allMatches.get(1).contains("K")) {
+                                this.K = -1;
+                            } else {
+                                this.K = Double.valueOf(allMatches.get(1)).doubleValue();
                             }
                             break;
                         case "Delta1":
@@ -375,7 +383,7 @@ public class MoRmodule {
         } else if (mode == 2) {
             double a = 0;
             double b = tmin;
-            int N = this.MORSETTINGS.n;
+            int N = this.MORSETTINGS.N_FIB;
             List<Double> F_R = FastMath.findFibonacciNumbersRatios(N);
             double x1 = 0;
             double x2 = 0;
@@ -514,14 +522,14 @@ public class MoRmodule {
         return ModsG;
     }
 
-    public double calcW(List<Double> E0, List<Double> E1) {
+    public double calcW(List<Double> E0, List<Double> E1, double w) {
         double E1Mid = 0;
         double E2Mid = 0;
         for (int i = 0; i < E0.size(); i++) E1Mid += E0.get(i);
         E1Mid /= E0.size();
         for (int i = 0; i < E1.size(); i++) E2Mid += E1.get(i);
         E2Mid /= E1.size();
-        return (E1Mid * E2Mid != 0) ? 0.5 * Math.sqrt(E2Mid / E1Mid) : 1.0;
+        return (E1Mid * E2Mid != 0) ? 0.5 * Math.sqrt(E2Mid / E1Mid) : w;
     }
 
 
@@ -635,7 +643,7 @@ public class MoRmodule {
                 break;
             case 2:
                 strOUT.append(String.format("|  %-50s%12s |\n", "Minima search method: ",
-                        "Fibonacci/" + String.valueOf(this.MORSETTINGS.n)));
+                        "Fibonacci/" + String.valueOf(this.MORSETTINGS.N_FIB)));
                 break;
             case 3:
                 strOUT.append(String.format("|  %-50s%12s |\n", "Minima search method: ", "parabolic"));
@@ -695,7 +703,9 @@ public class MoRmodule {
         FragmentData FRAG_II = (FragmentData) deepClone(FRAG);
         //FragmentData FRAG_III = (FragmentData) deepClone(FRAG);
 
-        if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
+        if (MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
+
+
 
         for (int i = 0; i < MORSETTINGS.N; i++) {
 
@@ -740,28 +750,35 @@ public class MoRmodule {
             minEcore = (minEcore == 0) ? E.Ecore : Math.min(E.Ecore, minEcore);
             minE = (minE == 0) ? E.E : Math.min(E.E, minE);
 
-
-            double[] ModsGparts = findModsGEparts(FRAG_I, E);
-            statModGsqExray.add(ModsGparts[0]);
-            statModGsqErest.add(ModsGparts[1]);
-            statModGsqEcore.add(ModsGparts[2]);
-            statModGsqEpenalty.add(ModsGparts[3]);
-            if (MORSETTINGS.wExray == -1)  {
-                E.improvewExray(calcW(statModGsqExray, statModGsqErest));
-            } else  {
+            if ((MORSETTINGS.wExray == -1) || (MORSETTINGS.wEcore == -1)) {
+                double[] ModsGparts = findModsGEparts(FRAG_I, E);
+                statModGsqExray.add(ModsGparts[0]);
+                statModGsqErest.add(ModsGparts[1]);
+                statModGsqEcore.add(ModsGparts[2]);
+                statModGsqEpenalty.add(ModsGparts[3]);
+            }
+            if (MORSETTINGS.wExray == -1) {
+                E.improvewExray(calcW(statModGsqExray, statModGsqErest, MORSETTINGS.wExray));
+            } else {
                 E.improvewExray(MORSETTINGS.wExray);
             }
             if (MORSETTINGS.wEcore == -1) {
-                E.improvewEcore(calcW(statModGsqEcore, statModGsqEpenalty));
+                E.improvewEcore(calcW(statModGsqEcore, statModGsqEpenalty, MORSETTINGS.wEcore));
             } else {
                 E.improvewEcore(MORSETTINGS.wEcore);
             }
 
-
             rho = findRho(FRAG_II, FRAG_I);
             FRAG_II = (FragmentData) deepClone(FRAG_I);
             jumpRaviness(FRAG_I, rho, h);
-            E.improveK(FRAG_I);
+
+            if (MORSETTINGS.K == -1) {
+                E.improveK(FRAG_I);
+            } else {
+                E.improveK(MORSETTINGS.K);
+            }
+
+
             E.calcEnergy(FRAG_I);
             if (this.MORSETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, i + 1, "J");
 

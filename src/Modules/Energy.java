@@ -275,9 +275,11 @@ public class Energy {
             case 4:
                 double A4 = this.ENERGYSETTINGS.A4;
                 double B4 = this.ENERGYSETTINGS.B4;
-                double P = (2.0 * Math.pow(itemHKL.Fc.getModule(), 2) +
-                        Math.max(Math.pow(itemHKL.Fo.getModule(), 2), 0.0)) / 3.0;
-                wHKL = 1.0 / (Math.pow(itemHKL.sigmaI, 2) + Math.pow(A4 * P, 2) + B4 * P);
+                if(!Double.isNaN(itemHKL.Fc.getModule())) {
+                    double P = (2.0 * Math.pow(itemHKL.Fc.getModule(), 2) +
+                            Math.max(Math.pow(itemHKL.Fo.getModule(), 2), 0.0)) / 3.0;
+                    wHKL = 1.0 / (Math.pow(itemHKL.sigmaI, 2) + Math.pow(A4 * P, 2) + B4 * P);
+                }
                 break;
             default:
                 break;

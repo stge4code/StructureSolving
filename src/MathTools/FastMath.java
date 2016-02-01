@@ -301,7 +301,7 @@ public final class FastMath {
                     if (c == ')') eatChar();
                 } else { // numbers
                     StringBuilder sb = new StringBuilder();
-                    while ((c >= '0' && c <= '9') || c == '.') {
+                    while ((c >= '0' && c <= '9') || (c == '.') || (c == 'E')) {
                         sb.append((char) c);
                         eatChar();
                     }

@@ -93,6 +93,10 @@ public class SAmodule {
         private double MAX_PARAMETERS_STEP = 0;
         private int PRINT_FRAGMENT = 0;
         private String SAVE_BEST_RESULT = "N";
+        private double c3 = 1E-3;
+        private double wExray_INI = 1.0;
+        private double wEcore_INI = 1.0;
+        private double K_INI = 1.0;
 
 
         public AnnealingSettings(String annealingSettingsFilename) {
@@ -123,6 +127,18 @@ public class SAmodule {
                                 break;
                             case "PRINT_FRAGMENT":
                                 this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
+                                break;
+                            case "c3":
+                                this.c3 = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "wExray_INI":
+                                this.wExray_INI = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "wEcore_INI":
+                                this.wEcore_INI = Double.valueOf(allMatches.get(1)).doubleValue();
+                                break;
+                            case "K_INI":
+                                this.K_INI = Double.valueOf(allMatches.get(1)).doubleValue();
                                 break;
                             default:
                                 break;
@@ -178,12 +194,11 @@ public class SAmodule {
 
     }
 
-    public double calcBolzman(List<Double> E, double T, double springP) {
-        double dE = 0;
-        int ESIZE = E.size();
-        if ((ESIZE - 1) > 0) {
-            for (int i = 0; i < ESIZE - 1; i++) dE += E.get(i) - E.get(i + 1);
-            dE /= (ESIZE - 1) / 2;
+    public double calcBolzmann(List<Double> statE, double T, double springP) {
+        double dE = 0.0;
+        if (statE.size() > 2) {
+            for (int i = 0; i < statE.size() - 1; i++) dE += statE.get(i) - statE.get(i + 1);
+            dE /= (statE.size() - 1) / 2.0;
             return Math.abs(dE / (T * Math.log(springP)));
         } else {
             return 1;
@@ -191,7 +206,7 @@ public class SAmodule {
 
     }
 
-    public double calcW(List<Double> E1, List<Double> E2) {
+    /*public double calcW(List<Double> E1, List<Double> E2) {
         double E1Mid = 0;
         double E2Mid = 0;
         if (E1.size() + E2.size() > 3) {
@@ -208,9 +223,59 @@ public class SAmodule {
             return 1;
         }
 
+    }*/
+
+    public double calcW(List<Double> E0, List<Double> E1, double w) {
+        double E1Mid = 0;
+        double E2Mid = 0;
+        for (int i = 0; i < E0.size(); i++) E1Mid += E0.get(i);
+        E1Mid /= E0.size();
+        for (int i = 0; i < E1.size(); i++) E2Mid += E1.get(i);
+        E2Mid /= E1.size();
+        return (E1Mid * E2Mid != 0) ? 0.5 * Math.sqrt(E2Mid / E1Mid) : w;
     }
 
 
+    /*public void findModsGEparts(List<Double> statEvalue, double Evalue, double deltaParameters) {
+        if (deltaParameters != 0) {
+            int size = statEvalue.size();
+            statEvalue.set(size - 1, Math.pow((Evalue - statEvalue.get(size - 1)) / deltaParameters, 2));
+            statEvalue.add(Evalue);
+        }
+    }*/
+
+    public double[] findModsGEparts(FragmentData FRAG, Energy E) {
+        double[] dEx = new double[this.ParametersList.length];
+        double[] dEr = new double[this.ParametersList.length];
+        double[] dEc = new double[this.ParametersList.length];
+        double[] dEp = new double[this.ParametersList.length];
+        double[] ModsG = new double[4];
+        for (int i = 0; i < this.ParametersList.length; i++) {
+            double dx = this.SASETTINGS.c3;
+            addToParameters(CELL, FRAG, ParametersList, i, -dx);
+            E.calcEnergy(FRAG);
+            double E0x = E.Exray;
+            double E0r = E.Erest;
+            double E0c = E.Ecore;
+            double E0p = E.Epenalty;
+            addToParameters(CELL, FRAG, ParametersList, i, 2 * dx);
+            E.calcEnergy(FRAG);
+            double E1x = E.Exray;
+            double E1r = E.Erest;
+            double E1c = E.Ecore;
+            double E1p = E.Epenalty;
+            addToParameters(CELL, FRAG, ParametersList, i, -dx);
+            dEx[i] = (E1x - E0x) / dx / 2.0;
+            dEr[i] = (E1r - E0r) / dx / 2.0;
+            dEc[i] = (E1c - E0c) / dx / 2.0;
+            dEp[i] = (E1p - E0p) / dx / 2.0;
+        }
+        ModsG[0] = Math.pow(FastMath.modV(dEx), 2);
+        ModsG[1] = Math.pow(FastMath.modV(dEr), 2);
+        ModsG[2] = Math.pow(FastMath.modV(dEc), 2);
+        ModsG[3] = Math.pow(FastMath.modV(dEp), 2);
+        return ModsG;
+    }
 
 
     public double randomizeParameters(FragmentData FRAG) {
@@ -220,8 +285,6 @@ public class SAmodule {
         addToParameters(this.CELL, FRAG, this.ParametersList, parametersChoice, Delta);
         return Delta;
     }
-
-
 
 
     public String sumOptions(List<String> opt) {
@@ -287,6 +350,8 @@ public class SAmodule {
         List<Double> statEglobal = new ArrayList<>();
         List<Double> statModGsqExray = new ArrayList<>();
         List<Double> statModGsqErest = new ArrayList<>();
+        List<Double> statModGsqEcore = new ArrayList<>();
+        List<Double> statModGsqEpenalty = new ArrayList<>();
         List<Double> statK = new ArrayList<>();
         List<String> opt = new ArrayList<>();
 
@@ -294,9 +359,10 @@ public class SAmodule {
         StringBuilder strSTATUS = new StringBuilder("");
         StringBuilder strIND = new StringBuilder("");
         double P = 0;
-        double wExray = 0;
-        double BOLTZMAN = 1.38064E-23;
-        double kB = BOLTZMAN;
+        double wExray = this.SASETTINGS.wExray_INI;
+        double wEcore = this.SASETTINGS.wEcore_INI;
+        double BOLTZMANN = 1.38064E-23;
+        double kB = BOLTZMANN;
         int iterationNumber = 0;
 
         double deltaE = 0;
@@ -321,6 +387,7 @@ public class SAmodule {
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of used reflections: ", HKL.getHKL().size()));
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of parameters: ", this.ParametersList.length));
         strOUT.append(String.format("|  %-50s%12.2e |\n", "Randomization step: ", this.SASETTINGS.MAX_PARAMETERS_STEP));
+        strOUT.append(String.format("|  %-50s%12.2f |\n", "Boltzmann constant probability: ", this.SASETTINGS.P_FOR_KB));
         strOUT.append(String.format("%-50s\n", "+-----------------------------------------------------------------+"));
         System.out.print(strOUT.toString());
         strOUT.setLength(0);
@@ -356,7 +423,6 @@ public class SAmodule {
                 FRAG = (FragmentData) deepClone(FRAG_LOAD);
                 FRAG_LOAD = null;
             } catch (IOException | ClassNotFoundException e) {
-
             }
             System.out.print("\r\r");
         } else {
@@ -370,6 +436,10 @@ public class SAmodule {
 
         if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
 
+        E.improvewExray(wExray);
+        E.improvewEcore(wEcore);
+        E.improveK(SASETTINGS.K_INI);
+
         while (iterCYCLE.hasNext()) {
             TemperatureItem itemTemperatureItem = iterCYCLE.next();
 
@@ -379,8 +449,11 @@ public class SAmodule {
             numDecreasesLocal = 0;
             strIND.setLength(0);
             iterationNumber++;
+
             statModGsqExray.clear();
             statModGsqErest.clear();
+            statModGsqEcore.clear();
+            statModGsqEpenalty.clear();
             statE.clear();
             opt.clear();
 
@@ -447,19 +520,31 @@ public class SAmodule {
                 }
 
 
-                if (itemTemperatureItem.cycleOpt.contains("Re")) {
-                    if (itemTemperatureItem.cycleOpt.contains("Xr")) {
-                        if (itemTemperatureItem.cycleOpt.contains("W")) {
-                            wExray = calcW(statModGsqExray, statModGsqErest);
-                            E.improvewExray(wExray);
-                            strSTATUS.append("Weights calculation, ");
-                            strOUT.append(String.format(" %-30s= %-12e\n", "Exray weight w", wExray));
-                        }
-                    } else {
-                        wExray = 0;
-                        E.improvewExray(wExray);
-                        strSTATUS.append("Dynamics simulation only, ");
-                    }
+                if (itemTemperatureItem.cycleOpt.contains("W")) {
+                    double[] ModsGparts = findModsGEparts(FRAG_I, E);
+                    statModGsqExray.add(ModsGparts[0]);
+                    statModGsqErest.add(ModsGparts[1]);
+                    statModGsqEcore.add(ModsGparts[2]);
+                    statModGsqEpenalty.add(ModsGparts[3]);
+                }
+
+                if (itemTemperatureItem.cycleOpt.contains("Wc")) {
+                    wEcore = calcW(statModGsqEcore, statModGsqEpenalty, wEcore);
+                    E.improvewEcore(wEcore);
+                    strSTATUS.append("Weights calculation, ");
+                    strOUT.append(String.format(" %-30s= %-12e\n", "Ecore weight w", wEcore));
+                }
+
+                if (itemTemperatureItem.cycleOpt.contains("Wx")) {
+                    wExray = calcW(statModGsqExray, statModGsqErest, wExray);
+                    E.improvewExray(wExray);
+                    strSTATUS.append("Weights calculation, ");
+                    strOUT.append(String.format(" %-30s= %-12e\n", "Exray weight w", wExray));
+                }
+
+
+                if ((itemTemperatureItem.cycleOpt.contains("Re")) && (!itemTemperatureItem.cycleOpt.contains("Xr"))) {
+                    strSTATUS.append("Dynamics simulation only, ");
                 }
 
 
@@ -470,21 +555,13 @@ public class SAmodule {
                 statEglobal.add(E.E);
 
 
-
-                if (deltaParameters != 0) {
-                    statModGsqExray.add(Math.pow(E.Exray / deltaParameters, 2));
-                    statModGsqErest.add(Math.pow(E.Erest / deltaParameters, 2));
-                }
-
-
                 if (itemTemperatureItem.cycleOpt.contains("Xr") || itemTemperatureItem.cycleOpt.contains("Re")) {
                     if (itemTemperatureItem.cycleOpt.contains("B")) {
-                        kB = calcBolzman(statE, itemTemperatureItem.cycleT, this.SASETTINGS.P_FOR_KB);
-                        strSTATUS.append("Bolzman constant optimization, ");
-                        strOUT.append(String.format(" %-30s= %-12e\n", "Bolzman constant", kB));
+                        kB = calcBolzmann(statE, itemTemperatureItem.cycleT, this.SASETTINGS.P_FOR_KB);
+                        strSTATUS.append("Bolzmann constant optimization, ");
+                        strOUT.append(String.format(" %-30s= %-12e\n", "Bolzmann constant", kB));
                     }
                 }
-
 
 
                 if ((itemTemperatureItem.cycleOpt.contains("D") || itemTemperatureItem.cycleOpt.contains("J"))) {
