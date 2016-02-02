@@ -226,13 +226,13 @@ public class SAmodule {
     }*/
 
     public double calcW(List<Double> E0, List<Double> E1, double w) {
+        double E0Mid = 0;
         double E1Mid = 0;
-        double E2Mid = 0;
-        for (int i = 0; i < E0.size(); i++) E1Mid += E0.get(i);
-        E1Mid /= E0.size();
-        for (int i = 0; i < E1.size(); i++) E2Mid += E1.get(i);
-        E2Mid /= E1.size();
-        return (E1Mid * E2Mid != 0) ? 0.5 * Math.sqrt(E2Mid / E1Mid) : w;
+        for (int i = 0; i < E0.size(); i++) E0Mid += E0.get(i);
+        E0Mid /= E0.size();
+        for (int i = 0; i < E1.size(); i++) E1Mid += E1.get(i);
+        E1Mid /= E1.size();
+        return (E0Mid * E1Mid != 0) ? 0.5 * Math.sqrt(E1Mid / E0Mid) : w;
     }
 
 
@@ -280,9 +280,9 @@ public class SAmodule {
 
     public double randomizeParameters(FragmentData FRAG) {
         Random randomVal = new Random();
-        int parametersChoice = randomVal.nextInt(this.ParametersList.length);
-        double Delta = randomizeDouble("SYM", this.SASETTINGS.MAX_PARAMETERS_STEP);
-        addToParameters(this.CELL, FRAG, this.ParametersList, parametersChoice, Delta);
+        int parametersChoice = randomVal.nextInt(ParametersList.length);
+        double Delta = randomizeDouble("SYM", SASETTINGS.MAX_PARAMETERS_STEP, SASETTINGS.RANDOMIZE_ACCURACY);
+        addToParameters(CELL, FRAG, ParametersList, parametersChoice, Delta);
         return Delta;
     }
 

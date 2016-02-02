@@ -55,6 +55,7 @@ public class Symmetry {
                     for(int i = 0; i < 3; i++){
                         sTemp = allMatches.get(i);
                         SYMt[i] = FastMath.eval(sTemp
+                                .toUpperCase()
                                 .replaceAll("X", "0.0")
                                 .replaceAll("Y", "0.0")
                                 .replaceAll("Z", "0.0"));
@@ -62,14 +63,17 @@ public class Symmetry {
                     for(int i = 0; i < 3; i++){
                         sTemp = allMatches.get(i);
                         SYMr[i][0] = -SYMt[i] + FastMath.eval(sTemp
+                                .toUpperCase()
                                 .replaceAll("X", "1.0")
                                 .replaceAll("Y", "0.0")
                                 .replaceAll("Z", "0.0"));
                         SYMr[i][1] = -SYMt[i] + FastMath.eval(sTemp
+                                .toUpperCase()
                                 .replaceAll("X", "0.0")
                                 .replaceAll("Y", "1.0")
                                 .replaceAll("Z", "0.0"));
                         SYMr[i][2] = -SYMt[i] + FastMath.eval(sTemp
+                                .toUpperCase()
                                 .replaceAll("X", "0.0")
                                 .replaceAll("Y", "0.0")
                                 .replaceAll("Z", "1.0"));

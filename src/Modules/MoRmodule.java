@@ -523,13 +523,13 @@ public class MoRmodule {
     }
 
     public double calcW(List<Double> E0, List<Double> E1, double w) {
+        double E0Mid = 0;
         double E1Mid = 0;
-        double E2Mid = 0;
-        for (int i = 0; i < E0.size(); i++) E1Mid += E0.get(i);
-        E1Mid /= E0.size();
-        for (int i = 0; i < E1.size(); i++) E2Mid += E1.get(i);
-        E2Mid /= E1.size();
-        return (E1Mid * E2Mid != 0) ? 0.5 * Math.sqrt(E2Mid / E1Mid) : w;
+        for (int i = 0; i < E0.size(); i++) E0Mid += E0.get(i);
+        E0Mid /= E0.size();
+        for (int i = 0; i < E1.size(); i++) E1Mid += E1.get(i);
+        E1Mid /= E1.size();
+        return (E0Mid * E1Mid != 0) ? 0.5 * Math.sqrt(E1Mid / E0Mid) : w;
     }
 
 
@@ -768,15 +768,15 @@ public class MoRmodule {
                 E.improvewEcore(MORSETTINGS.wEcore);
             }
 
-            rho = findRho(FRAG_II, FRAG_I);
-            FRAG_II = (FragmentData) deepClone(FRAG_I);
-            jumpRaviness(FRAG_I, rho, h);
-
             if (MORSETTINGS.K == -1) {
                 E.improveK(FRAG_I);
             } else {
                 E.improveK(MORSETTINGS.K);
             }
+
+            rho = findRho(FRAG_II, FRAG_I);
+            FRAG_II = (FragmentData) deepClone(FRAG_I);
+            jumpRaviness(FRAG_I, rho, h);
 
 
             E.calcEnergy(FRAG_I);

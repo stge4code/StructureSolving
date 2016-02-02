@@ -185,6 +185,34 @@ public class FragmentData implements Serializable {
 
     }
 
+    public void printFragsSource(String fragDataPrintListFilename) {
+        int numC = 0;
+        int numM = 0;
+        List<String> output = new ArrayList<>();
+        List<String> aTypeCounter = new ArrayList<>();
+        for (Fragment itemFrag : this.fragMass) {
+            ++numM;
+            output.add(String.format("MOLE %d", numM));
+            output.add(String.format("AFIX 1"));
+            for (Atom itemAtom : itemFrag.getFragAtomsSource()) {
+                ++numC;
+                if (!aTypeCounter.contains(itemAtom.getAtomName())) aTypeCounter.add(itemAtom.getAtomName());
+                output.add(String.format("%-4s  %d  % .5f  % .5f  % .5f 1%.4f %.3f",
+                        generateAtomNum(itemAtom.getAtomName(), numC),
+                        aTypeCounter.indexOf(itemAtom.getAtomName()) + 1,
+                        itemAtom.getAtomX(),
+                        itemAtom.getAtomY(),
+                        itemAtom.getAtomZ(),
+                        Math.abs(itemFrag.getFragO()),
+                        itemFrag.getFragU()));
+            }
+            output.add(String.format("AFIX 0"));
+        }
+
+        ObjectsUtilities.putContentToFile(fragDataPrintListFilename, output);
+
+    }
+
     public void printFragsWithSym(Symmetry sym) {
         printFragsWithSym(this.fragDataPrintListFilename, sym);
     }

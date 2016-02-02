@@ -75,6 +75,8 @@ public class Fragment implements Serializable {
         this.fragAtoms = fragAtoms;
     }
 
+
+
     public Double getFragPhi1() {
         return fragPhi1;
     }
@@ -102,7 +104,9 @@ public class Fragment implements Serializable {
     public List<Atom> getFragAtoms() {
         return fragAtoms;
     }
-
+    public List<Atom> getFragAtomsSource() {
+        return this.fragAtomsSource;
+    }
 
     public void setFragO(double fragO) {
         this.fragO = fragO;
@@ -342,8 +346,8 @@ public class Fragment implements Serializable {
                 }
             }
             double BessScat = SpecialFunction.j0(2 * Math.PI * ScatVect * D);
-            Fhkl[0] *= 60 * atomScattering * BessScat;
-            Fhkl[1] *= 60 * atomScattering * BessScat;
+            Fhkl[0] *= this.fragAtoms.size() * atomScattering * BessScat;
+            Fhkl[1] *= this.fragAtoms.size() * atomScattering * BessScat;
         } else  if (scatType.contains("F1s")) {
             atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
@@ -358,8 +362,8 @@ public class Fragment implements Serializable {
                 }
             }
             double BessScat = Math.sin(2 * Math.PI * ScatVect * D) / (2 * Math.PI * ScatVect * D);
-            Fhkl[0] *= 60 * atomScattering * BessScat;
-            Fhkl[1] *= 60 * atomScattering * BessScat;
+            Fhkl[0] *= this.fragAtoms.size() * atomScattering * BessScat;
+            Fhkl[1] *= this.fragAtoms.size() * atomScattering * BessScat;
         } else if (scatType.contains("F0")) {
             for (Atom itemAtom : this.fragAtoms) {
                 atomScattering = itemAtom.atomScattering(ScatVectSq);

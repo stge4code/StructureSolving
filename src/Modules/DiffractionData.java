@@ -351,9 +351,9 @@ public class DiffractionData {
                     int i_ = counter.get(i).intValue();
                     counter.set(i, Integer.valueOf(i_ + 1));
                     itemHKLm.I += itemHKL.I;
-                    itemHKLm.sigmaI *= i_;
-                    itemHKLm.sigmaI += itemHKL.sigmaI;
-                    itemHKLm.sigmaI /= (i_ + 1.0);
+                    itemHKLm.sigmaI = Math.pow(itemHKLm.sigmaI, 2);
+                    itemHKLm.sigmaI += Math.pow(itemHKL.sigmaI, 2);
+                    itemHKLm.sigmaI = Math.sqrt(itemHKLm.sigmaI);
                     break;
                 }
                 i++;

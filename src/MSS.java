@@ -38,7 +38,6 @@ public class MSS {
 
         PenaltyFunction PSI = new PenaltyFunction(
                 FULLPATH + NAME + ".PNLT");
-
         Energy E = new Energy(
                 HKL,
                 CELL,

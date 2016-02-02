@@ -251,26 +251,23 @@ public class Energy {
 
     public double calcwHKL(ReciprocalItem itemHKL) {
         double wHKL = 1.0;
-
-
-
         switch (this.ENERGYSETTINGS.WEIGHT_SCHEME) {
             case 0:
-                double A0 = 2.0 * this.HKL.getIMin();
-                double C0 = 2.0 / this.HKL.getIMax();
-                wHKL = 1.0 / (A0 + itemHKL.I + C0 * Math.pow(itemHKL.I, 2));
+                wHKL = 1.0;
                 break;
             case 1:
-                wHKL = 1.0 / Math.pow(itemHKL.I, 2);
+                double A1 = 2.0 * this.HKL.getIMin();
+                double B1 = 2.0 / this.HKL.getIMax();
+                wHKL = 1.0 / (A1 + itemHKL.Fo.getModule() + B1 * Math.pow(itemHKL.Fo.getModule(), 2));
                 break;
             case 2:
                 double A2 = this.ENERGYSETTINGS.A2;
                 double B2 = this.ENERGYSETTINGS.B2;
                 double K2 = this.ENERGYSETTINGS.K2;
-                wHKL = 1.0 / (1 + Math.pow((K2 * itemHKL.I - A2) / B2, 2));
+                wHKL = 1.0 / (1.0 + Math.pow((K2 * itemHKL.Fo.getModule() - A2) / B2, 2));
                 break;
             case 3:
-                wHKL = 1.0;
+                wHKL = 1.0 / Math.pow(itemHKL.Fo.getModule(), 2);
                 break;
             case 4:
                 double A4 = this.ENERGYSETTINGS.A4;
@@ -337,8 +334,8 @@ public class Energy {
                 "k",
                 "l",
                 "SCATVECT",
-                "Fo",
-                "Fo/K",
+                "Mod(Fo)",
+                "Mod(Fc)*K",
                 "Mod(Fc)",
                 "Arg(Fc)",
                 "Io-K*Ic"));
@@ -348,11 +345,11 @@ public class Energy {
                     itemHKL.k,
                     itemHKL.l,
                     FastMath.round(itemHKL.scatvect, 8),
-                    FastMath.round(Math.sqrt(itemHKL.I), 8),
-                    FastMath.round(Math.sqrt(itemHKL.I) / this.K, 8),
+                    FastMath.round(itemHKL.Fo.getModule(), 8),
+                    FastMath.round(itemHKL.Fc.getModule() * this.K, 8),
                     FastMath.round(itemHKL.Fc.getModule(), 8),
                     FastMath.round(itemHKL.Fc.getPhase(), 8),
-                    FastMath.round(itemHKL.I - this.K * Math.pow(itemHKL.Fc.getModule(), 2), 8)));
+                    FastMath.round(Math.pow(itemHKL.Fo.getModule(), 2) - Math.pow(this.K * itemHKL.Fc.getModule(), 2), 8)));
         }
         ObjectsUtilities.putContentToFile(this.infoFileName, output);
     }
@@ -364,24 +361,20 @@ public class Energy {
     public void improveK(FragmentData FRAG) {
         double sumFoFc = 0;
         double sumFcFc = 0;
-        double Fc = 0;
         double sumFcIm = 0;
         double sumFcRe = 0;
-        double Fo = 0;
-        double wHKL = 1.0;
 
         for (ReciprocalItem itemHKL : this.HKL.getHKL()) {
-            wHKL = calcwHKL(itemHKL);
+            double wHKL = calcwHKL(itemHKL);
             sumFcIm = sumFcRe = 0;
             for (Fragment itemFrag : FRAG.getFragMass()) {
                 ComplexNumber fScat = itemFrag.fragScattering(itemHKL, this.CELL, this.SYM);
                 sumFcRe += fScat.getRe();
                 sumFcIm += fScat.getIm();
             }
-            Fc = Math.sqrt(Math.pow(sumFcIm, 2) + Math.pow(sumFcRe, 2));
-            Fo = Math.sqrt(itemHKL.I);
-            sumFoFc += wHKL * Fo * Fc;
-            sumFcFc += wHKL * Math.pow(Fc, 2);
+            itemHKL.Fc.setNum(sumFcRe, sumFcIm);
+            sumFoFc += wHKL * itemHKL.Fo.getModule() * itemHKL.Fc.getModule();
+            sumFcFc += wHKL * Math.pow(itemHKL.Fc.getModule(), 2);
         }
         this.K = sumFoFc / sumFcFc;
     }
@@ -408,9 +401,6 @@ public class Energy {
 
         double partExray = 0;
         double partErest = 0;
-
-        //double[] cellTranslations = {this.CELL.getA(), this.CELL.getB(), this.CELL.getC()};
-        //Arrays.sort(cellTranslations);
         double sumFoFc = 0;
         double sumFcFc = 0;
         double sumFomkFc = 0;
@@ -421,35 +411,30 @@ public class Energy {
         double sumFomFc_cond = 0;
         double sumFo_cond = 0;
         double Na = 0;
-        double Fc = 0;
         double sumFcIm = 0;
         double sumFcRe = 0;
-        double Fo = 0;
-        double sumFomFcwK = 0;
-        double wHKL = 1.0;
-        //this.statFc.clear();
+        double sumFomFcwk = 0;
 
         for (ReciprocalItem itemHKL : this.HKL.getHKL()) {
-            wHKL = calcwHKL(itemHKL);
+            double wHKL = calcwHKL(itemHKL);
             sumFcIm = sumFcRe = 0;
             for (Fragment itemFrag : FRAG.getFragMass()) {
                 ComplexNumber fScat = itemFrag.fragScattering(itemHKL, this.CELL, this.SYM);
                 sumFcRe += fScat.getRe();
                 sumFcIm += fScat.getIm();
             }
-            Fc = Math.sqrt(Math.pow(sumFcIm, 2) + Math.pow(sumFcRe, 2));
-            Fo = itemHKL.Fo.getModule();
-            sumFomkFc += Math.abs(Fo - this.K * Fc);
-            sumwFoSq += Math.abs(wHKL * Math.pow(Fo, 2));
-            sumwFomFcSq += Math.abs(wHKL * Math.pow(Fo - Fc, 2));
-            sumFomFc_cond += (Fc < Fo) ? Math.abs(Fc - Fo) : 0.0;
-            sumFo_cond += Fo;
-            sumFomFc += Math.abs(Fc - Fo);
-            sumFo += Fo;
-            sumFoFc += wHKL * Fo * Fc;
-            sumFcFc += wHKL * Math.pow(Fc, 2);
-            Na += wHKL * Math.abs(itemHKL.I);
-            sumFomFcwK = wHKL * Math.pow(Fo - this.K * Fc, 2);
+            itemHKL.Fc.setNum(sumFcRe, sumFcIm);
+            sumFomkFc += Math.abs(itemHKL.Fo.getModule() - this.K * itemHKL.Fc.getModule());
+            sumwFoSq += Math.abs(wHKL * Math.pow(itemHKL.Fo.getModule(), 2));
+            sumwFomFcSq += Math.abs(wHKL * Math.pow(itemHKL.Fo.getModule() - itemHKL.Fc.getModule(), 2));
+            sumFomFc_cond += (itemHKL.Fc.getModule() < itemHKL.Fo.getModule()) ? Math.abs(itemHKL.Fc.getModule() - itemHKL.Fo.getModule()) : 0.0;
+            sumFo_cond += itemHKL.Fo.getModule();
+            sumFomFc += Math.abs(itemHKL.Fc.getModule() - itemHKL.Fo.getModule());
+            sumFo += itemHKL.Fo.getModule();
+            sumFoFc += wHKL * itemHKL.Fo.getModule() * itemHKL.Fc.getModule();
+            sumFcFc += wHKL * Math.pow(itemHKL.Fc.getModule(), 2);
+            Na += wHKL * Math.pow(itemHKL.Fo.getModule(), 2);
+            sumFomFcwk = wHKL * Math.pow(itemHKL.Fo.getModule() - this.K * itemHKL.Fc.getModule(), 2);
             itemHKL.Fc.setNum(sumFcRe, sumFcIm);
         }
         if (this.autoAdjustK) improveK(sumFoFc / sumFcFc);
@@ -459,7 +444,7 @@ public class Energy {
         this.RIV = sumFomFc / sumFo;
 
         if (this.OPT.contains("Xr1")) {
-            partExray = sumFomFcwK;
+            partExray = sumFomFcwk;
         }
         if (this.OPT.contains("Xr2")) {
             partExray = sumFomFc;
