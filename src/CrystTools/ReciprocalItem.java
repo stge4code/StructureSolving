@@ -24,7 +24,7 @@ public class ReciprocalItem {
         this.sigmaI = sigmai;
         this.scatvect = scatvect;
         this.batchNumber = batchnumber;
-        this.Fo.setModule(Math.sqrt(i));
+        updateFoModule(i);
     }
 
     public ReciprocalItem(ReciprocalItem other) {
@@ -37,5 +37,10 @@ public class ReciprocalItem {
         this.batchNumber = other.batchNumber;
         this.Fc.setNum(other.Fc);
         this.Fo.setNum(other.Fo);
+        updateFoModule(other.I);
+    }
+
+    private void updateFoModule(double i) {
+        if (i >= 0) this.Fo.setModule(Math.sqrt(i));
     }
 }

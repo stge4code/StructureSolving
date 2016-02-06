@@ -23,15 +23,20 @@ public class DiffractionData {
     private String diffDataFilename = "";
     private String diffractionDataFilenameExport = "";
     private List<ReciprocalItem> HKL = new ArrayList<>();
-    private double IMax;
-    private double IMin;
+    private HKLParameters Parameters;
     private DiffractionDataSettings DIFDATASETTINGS;
 
+
+    public class HKLParameters {
+        double IMax;
+        double IMin;
+    }
 
     public class DiffractionDataSettings {
         private String diffractionDataSettingsFilename;
         private String MERGE;
         private String ORDER;
+        private String REPAIR_SOURCE;
         private double SCATTERING_MERGE_ACCURACY;
         private int[] N = new int[2];
         private SortRules SORT_H = new SortRules();
@@ -104,6 +109,9 @@ public class DiffractionData {
                             case "ORDER":
                                 this.ORDER = allMatches.get(1);
                                 break;
+                            case "REPAIR_SOURCE":
+                                this.REPAIR_SOURCE = allMatches.get(1);
+                                break;
                             default:
                                 break;
                         }
@@ -133,11 +141,13 @@ public class DiffractionData {
                         int h = (int) Double.valueOf(m.group(1)).doubleValue();
                         int k = (int) Double.valueOf(m.group(2)).doubleValue();
                         int l = (int) Double.valueOf(m.group(3)).doubleValue();
-                        double Fsq = Double.valueOf(m.group(4)).doubleValue();
-                        double sigmaFsq = Double.valueOf(m.group(5)).doubleValue();
-                        double batchNumber = (!m.group(6).isEmpty()) ? Double.valueOf(m.group(6)).doubleValue() : 1.0;
-                        double scatvect = CELL.calcScatVect(h, k, l);
-                        this.HKL.add(new ReciprocalItem(h, k, l, Fsq, sigmaFsq, scatvect, batchNumber));
+                        if ((h != 0) && (k != 0) && (l != 0)) {
+                            double I = Double.valueOf(m.group(4)).doubleValue();
+                            double sigmaI = Double.valueOf(m.group(5)).doubleValue();
+                            double batchNumber = (!m.group(6).isEmpty()) ? Double.valueOf(m.group(6)).doubleValue() : 1.0;
+                            double scatvect = CELL.calcScatVect(h, k, l);
+                            this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber));
+                        }
                     }
                 }
             } catch (NumberFormatException e) {
@@ -145,9 +155,23 @@ public class DiffractionData {
         }
 
         System.out.print("\rLoading reflections...");
+
+        if (DIFDATASETTINGS.REPAIR_SOURCE != null) {
+            System.out.print("\rRepairing reflections...");
+            for (char mch : DIFDATASETTINGS.REPAIR_SOURCE.toCharArray()) {
+                switch (mch) {
+                    case 'P':
+                        this.HKL = repairUpToPositive(this.HKL);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
         this.HKL = sortReflections(CELL, this.HKL);
 
-        if (!DIFDATASETTINGS.MERGE.equals("N")) {
+        if (DIFDATASETTINGS.MERGE != null) {
             System.out.print("\rMerging reflections...");
             for (char mch : DIFDATASETTINGS.MERGE.toCharArray()) {
                 switch (mch) {
@@ -166,7 +190,7 @@ public class DiffractionData {
             }
         }
 
-        if (!DIFDATASETTINGS.ORDER.equals("N")) {
+        if (DIFDATASETTINGS.ORDER != null) {
             System.out.print("\rOrdering reflections...");
             for (char mch : DIFDATASETTINGS.ORDER.toCharArray()) {
                 switch (mch) {
@@ -248,29 +272,33 @@ public class DiffractionData {
             }
         }
 
-        findHKLParameters();
-        System.out.print("\r\r");
+        this.Parameters = findHKLParameters(this.HKL);
+        System.out.print("\r");
         if (this.HKL.isEmpty()) System.exit(0);
     }
 
 
-    public double getIMax() {
-        return IMax;
-    }
-
-    public double getIMin() {
-        return IMin;
-    }
-
-    private void findHKLParameters() {
-        double IMin = this.HKL.get(0).I;
-        double IMax = 0;
-        for (ReciprocalItem itemHKL : this.HKL) {
-            IMin = Math.min(IMin, itemHKL.I);
-            IMax = Math.max(IMax, itemHKL.I);
+    private HKLParameters findHKLParameters(List<ReciprocalItem> source) {
+        HKLParameters hklparameters = new HKLParameters();
+        hklparameters.IMax = source.get(0).I;
+        hklparameters.IMin = source.get(0).I;
+        for (ReciprocalItem itemHKL : source) {
+            hklparameters.IMin = Math.min(hklparameters.IMin, itemHKL.I);
+            hklparameters.IMax = Math.max(hklparameters.IMax, itemHKL.I);
         }
-        this.IMax = IMax;
-        this.IMin = IMin;
+        return hklparameters;
+    }
+
+
+    private List<ReciprocalItem> repairUpToPositive(List<ReciprocalItem> unChanged) {
+        List<ReciprocalItem> changed = new ArrayList<>();
+        HKLParameters hklparameters = findHKLParameters(unChanged);
+        for (Iterator<ReciprocalItem> iterHKL = unChanged.iterator(); iterHKL.hasNext(); ) {
+            ReciprocalItem itemHKL = iterHKL.next();
+            itemHKL.I += Math.abs(hklparameters.IMin);
+            changed.add(new ReciprocalItem(itemHKL));
+        }
+        return changed;
     }
 
 
@@ -343,7 +371,9 @@ public class DiffractionData {
             int i = 0;
             for (ReciprocalItem itemHKLm : merged) {
                 if (Math.abs(itemHKLm.scatvect - itemHKL.scatvect) < this.DIFDATASETTINGS.SCATTERING_MERGE_ACCURACY) {
-                    if ((itemHKL.h <= itemHKLm.h) && (itemHKL.k <= itemHKLm.k) && (itemHKL.l <= itemHKLm.l)) {
+                    if ((Math.abs(itemHKL.h) <= Math.abs(itemHKLm.h))
+                            && (Math.abs(itemHKL.k) <= Math.abs(itemHKLm.k))
+                            && (Math.abs(itemHKL.l) <= Math.abs(itemHKLm.l))) {
                         itemHKLm.h = itemHKL.h;
                         itemHKLm.k = itemHKL.k;
                         itemHKLm.l = itemHKL.l;
@@ -607,5 +637,9 @@ public class DiffractionData {
                     (int) itemHKL.batchNumber));
         }
         ObjectsUtilities.putContentToFile(this.diffractionDataFilenameExport, output);
+    }
+
+    public HKLParameters getParameters() {
+        return Parameters;
     }
 }

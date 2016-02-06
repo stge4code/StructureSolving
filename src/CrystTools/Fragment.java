@@ -372,7 +372,6 @@ public class Fragment implements Serializable {
                     double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
                     argPhase = 2 * Math.PI * (VECT[0] * HKL.h + VECT[1] * HKL.k + VECT[2] * HKL.l);
                     Fhkl[0] += atomScattering * Math.cos(argPhase);
-                    //Fhkl[1] +=  atomScattering * Math.sin(argPhase);
                     if (SYM.getLATT() < 0) {
                         Fhkl[1] +=  atomScattering * Math.sin(argPhase);
                     } else {

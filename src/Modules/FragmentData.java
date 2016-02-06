@@ -86,12 +86,16 @@ public class FragmentData implements Serializable {
                             Double.valueOf(allMatches.get(2)).doubleValue(),
                             Double.valueOf(allMatches.get(3)).doubleValue()
                     );
+                    double aO = Double.valueOf(allMatches.get(4)).doubleValue();
+                    double aU = Double.valueOf(allMatches.get(5)).doubleValue();
                     double[] aScat = findAtomsScattering(aName);
                     double[] aParams = findAtomsParams(aName);
                     fragAtoms.add(new Atom(aName,
                             VECT[0],
                             VECT[1],
                             VECT[2],
+                            aO,
+                            aU,
                             aScat,
                             aParams[0],
                             aParams[1]));
@@ -175,8 +179,8 @@ public class FragmentData implements Serializable {
                         itemAtom.getAtomX(),
                         itemAtom.getAtomY(),
                         itemAtom.getAtomZ(),
-                        Math.abs(itemFrag.getFragO()),
-                        itemFrag.getFragU()));
+                        Math.abs(itemFrag.getFragO() * itemAtom.getAtomO()),
+                        itemFrag.getFragU() + itemAtom.getAtomU()));
             }
             output.add(String.format("AFIX 0"));
         }
@@ -203,8 +207,8 @@ public class FragmentData implements Serializable {
                         itemAtom.getAtomX(),
                         itemAtom.getAtomY(),
                         itemAtom.getAtomZ(),
-                        Math.abs(itemFrag.getFragO()),
-                        itemFrag.getFragU()));
+                        Math.abs(itemFrag.getFragO() * itemAtom.getAtomO()),
+                        itemFrag.getFragU() + itemAtom.getAtomU()));
             }
             output.add(String.format("AFIX 0"));
         }
@@ -240,8 +244,8 @@ public class FragmentData implements Serializable {
                             VECT[0],
                             VECT[1],
                             VECT[2],
-                            Math.abs(itemFrag.getFragO()),
-                            itemFrag.getFragU()));
+                            Math.abs(itemFrag.getFragO() * itemAtom.getAtomO()),
+                            itemFrag.getFragU() + itemAtom.getAtomU()));
                 }
                 output.add(String.format("AFIX 0"));
             }

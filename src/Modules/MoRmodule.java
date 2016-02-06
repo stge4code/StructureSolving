@@ -668,7 +668,7 @@ public class MoRmodule {
             strOUT.append(String.format(" %-30s= %-12e\n", "Penalty function", E.Epenalty));
             System.out.print("\n" + strOUT + "\n");
             strOUT.setLength(0);
-            strOUT.append(String.format("\n%-50s\n", "-------------------------------------------------------------------"));
+            strOUT.append(String.format("\n%-50s\n", "+-----------------------------------------------------------------+"));
             System.out.print(strOUT);
             System.out.print("Done.\n");
             FRAG.printFragsWithSym(SYM);
@@ -791,7 +791,7 @@ public class MoRmodule {
                     strIND);
 
         }
-        strOUT.append(String.format("\n%-50s\n", "-------------------------------------------------------------------"));
+        strOUT.append(String.format("\n%-50s\n", "+-----------------------------------------------------------------+"));
         System.out.print(strOUT);
         System.out.print("Done.\n");
 

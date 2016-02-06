@@ -256,8 +256,8 @@ public class Energy {
                 wHKL = 1.0;
                 break;
             case 1:
-                double A1 = 2.0 * this.HKL.getIMin();
-                double B1 = 2.0 / this.HKL.getIMax();
+                double A1 = 2.0 * this.HKL.getParameters().IMin;
+                double B1 = 2.0 / this.HKL.getParameters().IMax;
                 wHKL = 1.0 / (A1 + itemHKL.Fo.getModule() + B1 * Math.pow(itemHKL.Fo.getModule(), 2));
                 break;
             case 2:
