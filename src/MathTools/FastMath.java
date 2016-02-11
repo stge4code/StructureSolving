@@ -1,6 +1,7 @@
 package MathTools;
 
 import CrystTools.Fragment;
+import CrystTools.ReciprocalItem;
 import CrystTools.UnitCell;
 import Modules.FragmentData;
 
@@ -10,6 +11,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -62,6 +64,39 @@ public final class FastMath {
         return V3;
     }
 
+    public static boolean allDifferent(double[] parameters) {
+        boolean result = true;
+        for (int i = 0; i < parameters.length; i++)
+            for (int k = 0; k < parameters.length; k++) {
+                result = result & ((parameters[i] != parameters[k]) | (i == k));
+            }
+        return result;
+    }
+
+    public static boolean allEqual(double[] parameters) {
+        boolean result = true;
+        for (int i = 1; i < parameters.length; i++) result = result & (parameters[i - 1] == parameters[i]);
+        return result;
+    }
+
+    public static boolean AnyEquals(ReciprocalItem[] parameters) {
+        boolean result = false;
+        for (int i = 0; i < parameters.length; i++)
+            for (int k = 0; k < parameters.length; k++) {
+                if (i != k) result = result | ReciprocalItem.compare(parameters[i], parameters[k]);
+
+            }
+        return result;
+    }
+
+    public static boolean AnyEquals(ReciprocalItem parameter, ReciprocalItem[] parameters) {
+        boolean result = false;
+        for (int i = 0; i < parameters.length; i++) {
+            result = result | ReciprocalItem.compare(parameters[i], parameter);
+        }
+        return result;
+    }
+
     public static double[] KmV(double K, double[] V1) {
         double[] V2 = new double[V1.length];
         for (int i = 0; i < V1.length; i++) V2[i] = K * V1[i];
@@ -86,7 +121,7 @@ public final class FastMath {
 
 
     public static double round(double value, int places) {
-        if(Double.isNaN(value)) return Double.NaN;
+        if (Double.isNaN(value)) return Double.NaN;
         if (places < 0) throw new IllegalArgumentException();
         BigDecimal bd = new BigDecimal(value);
         bd = bd.setScale(places, RoundingMode.HALF_UP);
@@ -129,7 +164,6 @@ public final class FastMath {
 //        Ad.divide(Bd);
 //        return  Ad.doubleValue();
 //    }
-
 
 
     public static ArrayList<Double> findFibonacciNumbersRatios(int N) {
@@ -337,8 +371,6 @@ public final class FastMath {
     }
 
 
-
-
     public static void randomizeParametersInitial(UnitCell CELL, FragmentData FRAG, int NUM) {
 
         double dX = 0, dY = 0, dZ = 0;
@@ -351,11 +383,17 @@ public final class FastMath {
                 dX = dY = dZ = 0;
                 dPhi1 = dPhi2 = dTheta = 0;
                 dO = dU = 0;
-                if (itemFRAG.getFragOPT().contains("T")) {
+                if (itemFRAG.getFragOPT().contains("X")) {
                     dX = randomizeDouble("SYM", .5);
+                }
+                if (itemFRAG.getFragOPT().contains("Y")) {
                     dY = randomizeDouble("SYM", .5);
+                }
+                if (itemFRAG.getFragOPT().contains("Z")) {
                     dZ = randomizeDouble("SYM", .5);
                 }
+
+
                 if (itemFRAG.getFragOPT().contains("R")) {
                     //dPhi1 = randomizeDouble("ASYM", 2 * Math.PI);
                     //dPhi2 = randomizeDouble("ASYM", 2 * Math.PI);
@@ -373,7 +411,9 @@ public final class FastMath {
         int parametersNum = 0;
         for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
             Fragment itemFRAG = iterFRAG.next();
-            if (itemFRAG.getFragOPT().contains("T")) parametersNum += 3;
+            if (itemFRAG.getFragOPT().contains("X")) parametersNum += 1;
+            if (itemFRAG.getFragOPT().contains("Y")) parametersNum += 1;
+            if (itemFRAG.getFragOPT().contains("Z")) parametersNum += 1;
             if (itemFRAG.getFragOPT().contains("R")) parametersNum += 3;
             if (itemFRAG.getFragOPT().contains("O")) parametersNum += 1;
             if (itemFRAG.getFragOPT().contains("U")) parametersNum += 1;
@@ -439,9 +479,13 @@ public final class FastMath {
         int i = 0, k = 0;
         for (Iterator<Fragment> iterFRAG = FRAG.getFragMass().iterator(); iterFRAG.hasNext(); ) {
             Fragment itemFRAG = iterFRAG.next();
-            if (itemFRAG.getFragOPT().contains("T")) {
+            if (itemFRAG.getFragOPT().contains("X")) {
                 gPL[k++] = i * 10 + 1;
+            }
+            if (itemFRAG.getFragOPT().contains("Y")) {
                 gPL[k++] = i * 10 + 2;
+            }
+            if (itemFRAG.getFragOPT().contains("Z")) {
                 gPL[k++] = i * 10 + 3;
             }
             if (itemFRAG.getFragOPT().contains("R")) {
@@ -511,5 +555,17 @@ public final class FastMath {
         itemFRAG.fragModifyParameters(CELL, dX, dY, dZ, dPhi1, dPhi2, dTheta, dO, dU);
     }
 
+    public static List<Integer> integerToRanks(int value){
+        List<Integer> result = new ArrayList<>();
+        int value_tmp = value;
+        int value_goal = 0;
+        int counter = 0;
+        while(value_goal != value){
+            value_tmp %= 10;
+            value_goal += Math.pow(10, counter++) * value_tmp;
+            result.add(value_tmp);
+        }
+        return result;
+    }
 
 }

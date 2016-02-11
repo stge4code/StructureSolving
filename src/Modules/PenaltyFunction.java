@@ -45,7 +45,7 @@ public class PenaltyFunction {
 
     public PenaltyFunction(String penaltyDataFilename) {
         this.penaltyDataFilename = penaltyDataFilename;
-        List<String> input = ObjectsUtilities.getContentFromFile(this.penaltyDataFilename);
+        List<String> input = ObjectsUtilities.getContentFromFile(this.penaltyDataFilename, "PENALTY_FUNCTION_SETTINGS");
         for (String s : input) {
             try {
                 if (!s.isEmpty()) {

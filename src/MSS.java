@@ -14,7 +14,7 @@ public class MSS {
         String NAME = args[1];
         String METHOD = args[2];
 
-        System.out.printf("\n%-50s\n", "MODIFIED STRUCTURE SOLUTION v2.1");
+        System.out.printf("\n%-50s\n", "MODIFIED STRUCTURE SOLUTION v2.5");
 
 
         UnitCell CELL = new UnitCell(
@@ -25,27 +25,26 @@ public class MSS {
         FragmentData FRAG = new FragmentData(
                 CELL,
                 FULLPATH + NAME + ".FGTY",
-                FULLPATH + NAME + ".FGLS",
-                FULLPATH + NAME + ".OUT",
-                FULLPATH + NAME + ".SCAT",
+                FULLPATH + NAME + ".STNG",
+                FULLPATH  + "_" +  NAME + ".FG",
+                FULLPATH + NAME + ".ASCT",
                 FULLPATH + NAME + ".ASPC");
         DiffractionData HKL = new DiffractionData(
                 CELL,
                 FULLPATH + NAME + ".HKL",
-                FULLPATH + NAME + ".HKLS",
+                FULLPATH + NAME + ".STNG",
                 FULLPATH + "_" + NAME + ".HKL");
         HKL.printHKL();
 
         PenaltyFunction PSI = new PenaltyFunction(
-                FULLPATH + NAME + ".PNLT");
+                FULLPATH + NAME + ".STNG");
         Energy E = new Energy(
                 HKL,
                 CELL,
                 SYM,
                 PSI,
-                FULLPATH + NAME + ".ENGS",
-                FULLPATH  + "_" +  NAME + ".INFO");
-        //System.out.print(CELL.calcDistance(0, 0, 2));
+                FULLPATH + NAME + ".STNG",
+                FULLPATH  + "_" +  NAME + ".HKLF");
 
         if (METHOD.equals("SA")) {
             SAmodule SAROUTINE = new SAmodule(
@@ -53,10 +52,9 @@ public class MSS {
                     FRAG,
                     HKL,
                     E,
-                    FULLPATH + NAME + ".SAS",
-                    FULLPATH + NAME + ".ARGM",
-                    FULLPATH + NAME + ".TEMP",
-                    FULLPATH + NAME + ".DUMP");
+                    FULLPATH + NAME + ".STNG",
+                    FULLPATH  + "_" +  NAME + ".RF",
+                    FULLPATH  + "_" +  NAME + ".DUMP");
             SAROUTINE.run();
         }
         if (METHOD.equals("MoR")) {
@@ -66,9 +64,9 @@ public class MSS {
                     FRAG,
                     HKL,
                     E,
-                    FULLPATH + NAME + ".MRS",
-                    FULLPATH + NAME + ".TEMP",
-                    FULLPATH + NAME + ".DUMP");
+                    FULLPATH + NAME + ".STNG",
+                    FULLPATH  + "_" +  NAME + ".RF",
+                    FULLPATH  + "_" +  NAME + ".DUMP");
             MoRROUTINE.run();
         }
 

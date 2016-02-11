@@ -170,6 +170,10 @@ public class Fragment implements Serializable {
         this.fragWeight = fragWeight;
     }
 
+    public double getFragDiameter() {
+        return fragDiameter;
+    }
+
     public void fragFindCenter(int mode) {
         if (mode == 1) {
             double[] VECT = {0.0, 0.0, 0.0};
@@ -400,6 +404,10 @@ public class Fragment implements Serializable {
             D += 2.0 / numAtoms * itemR;
         }
         return D;
+    }
+
+    public void findFragDiameter(UnitCell CELL) {
+        this.fragDiameter = fragDiameter(CELL);
     }
 
 }

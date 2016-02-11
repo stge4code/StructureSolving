@@ -38,7 +38,7 @@ public class FragmentData implements Serializable {
         this.aDataScatteringFilename = aDataScatteringFilename;
         this.aDataAtomParamsFilename = aDataAtomParamsFilename;
 
-        List<String> input = ObjectsUtilities.getContentFromFile(fragDataListFilename);
+        List<String> input = ObjectsUtilities.getContentFromFile(fragDataListFilename, "FRAGMENTS");
         for (String s : input) {
             try {
                 Pattern p = Pattern.compile("(\\S+)");
@@ -50,12 +50,16 @@ public class FragmentData implements Serializable {
                 String fName = allMatches.get(0);
                 List<Atom> fAtoms = findAtomsCoords(fName);
                 int fNum = Integer.valueOf(allMatches.get(1));
-                double fO = Double.valueOf(allMatches.get(2)).doubleValue();
-                double fU = Double.valueOf(allMatches.get(3)).doubleValue();
+                double fO = FastMath.eval(allMatches.get(2));
+                double fU = FastMath.eval(allMatches.get(3));
                 String fSt = allMatches.get(4);
                 String fOpt = "";
                 if (allMatches.size() == 6) fOpt = allMatches.get(5);
-                if (!fOpt.contains("S")) this.fragMass.add(new Fragment(fName, fAtoms, fNum, fO, fU, fSt, fOpt));
+                if (!fOpt.contains("S")) {
+                    Fragment frag = new Fragment(fName, fAtoms, fNum, fO, fU, fSt, fOpt);
+                    frag.findFragDiameter(CELL);
+                    this.fragMass.add(frag);
+                }
             } catch (NumberFormatException e) {
                 throw new RuntimeException(e);
             }
@@ -67,11 +71,11 @@ public class FragmentData implements Serializable {
         List<String> input = ObjectsUtilities.getContentFromFile(this.fragDataTypesFilename);
         boolean flag = false;
         for (String s : input) {
-            if (s.equals(fragmentName)) {
+            if (s.equals(fragmentName + "{")) {
                 flag = true;
                 continue;
             }
-            if (s.equals("END")) flag = false;
+            if (flag && s.contains("}")) flag = false;
             if (flag) {
                 try {
                     Pattern p = Pattern.compile("(\\S+)");

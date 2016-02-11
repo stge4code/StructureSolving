@@ -50,6 +50,11 @@ public class UnitCell implements Serializable {
     private double cGstar;
     private double sGstar;
 
+    private Laue laue;
+
+    public Laue getLaue() {
+        return laue;
+    }
 
     public void setA(double a) {
         this.a = a;
@@ -155,6 +160,82 @@ public class UnitCell implements Serializable {
         G[2][1] = this.b * this.c * cA;
         this.G = G;
     }
+
+    public Laue findLaue() {
+
+        if(FastMath.allDifferent(new double[] {this.a, this.b, this.c})
+                && FastMath.allDifferent(new double[] {this.alpha, this.beta, this.gamma, 90.0})) {
+            return   Laue.Lm1;
+        }
+
+        if (FastMath.allDifferent(new double[] {this.a, this.b, this.c})) {
+
+            if ((this.alpha == 90.0)
+                    && (this.beta != 90.0)
+                    && (this.gamma == 90.0)){
+               return Laue.L2pM_b;
+            }
+            if ((this.beta == 90.0)
+                    && (this.alpha != 90.0)
+                    && (this.gamma == 90.0)){
+                return Laue.L2pM_a;
+            }
+            if ((this.alpha == 90.0)
+                    && (this.gamma != 90.0)
+                    && (this.beta == 90.0)){
+                return   Laue.L2pM_c;
+            }
+
+            if  (FastMath.allEqual(new double[] {this.alpha, this.beta, this.gamma, 90.0})) {
+                return   Laue.LMMM;
+            }
+
+        }
+
+        if  (FastMath.allEqual(new double[] {this.alpha, this.beta, this.gamma, 90.0})) {
+
+            if ((this.a == this.b) && (this.b != this.c)) {
+                return Laue.L4pM_c;
+            }
+            if ((this.a == this.c) && (this.b != this.c)) {
+                return Laue.L4pM_b;
+            }
+            if ((this.c == this.b) && (this.a != this.c)) {
+                return Laue.L4pM_a;
+            }
+
+            if(FastMath.allEqual(new double[] {this.a, this.b, this.c})) {
+                return   Laue.LMm3;
+            }
+        }
+
+        if  ((this.alpha == 90.0)
+                && (this.beta == 90.0)
+                && (this.gamma == 120.0)
+                && (this.a == this.b)
+                && (this.b != this.c)) {
+                return Laue.Lm3_c;
+            }
+        if  ((this.alpha == 90.0)
+                && (this.gamma== 90.0)
+                && (this.beta == 120.0)
+                && (this.a == this.c)
+                && (this.b != this.c)) {
+            return Laue.Lm3_b;
+        }
+
+        if  ((this.gamma == 90.0)
+                && (this.beta == 90.0)
+                && (this.alpha == 120.0)
+                && (this.b == this.c)
+                && (this.a != this.c)) {
+            return Laue.Lm3_a;
+        }
+
+
+        return   Laue.Lm1;
+    }
+
 
     public void calcGstar() {
         double[][] Gstar = new double[3][3];
@@ -334,6 +415,7 @@ public class UnitCell implements Serializable {
                     this.calcTrigonometryStar();
                     this.calcG();
                     this.calcGstar();
+                    this.laue = this.findLaue();
                 } catch (NumberFormatException e) {
                 }
             }

@@ -65,18 +65,18 @@ public class MoRmodule {
         private int FIRST_RANDOMIZATION = 50;
         private int MINIMA_SEARCH_METHOD = 1;
         private int N_FIB = 10;
-        private String SAVE_BEST_RESULT = "N";
+        private String SAVE_BEST_RESULT;
         private int G_FIND_DERIVATIVE = 3;
-        private int PRINT_FRAGMENT = 1;
+        private int PRINT_FRAGMENT;
         private String Eopt = "";
-        private double wExray = -1.0;
-        private double wEcore = -1.0;
-        private double K = -1.0;
+        private String wExray;
+        private String wEcore;
+        private String K;
 
         //----------------------------------------------------------------------------------------------------------------------
         private RavinessSettings(String ravinessDataFilename) {
             this.ravinessSettingsFilename = ravinessDataFilename;
-            List<String> input = ObjectsUtilities.getContentFromFile(this.ravinessSettingsFilename);
+            List<String> input = ObjectsUtilities.getContentFromFile(this.ravinessSettingsFilename, "METHOD_OF_RAVINESS_SETTINGS");
             for (String s : input) {
                 try {
                     Pattern p = Pattern.compile("(\\S+)");
@@ -125,25 +125,13 @@ public class MoRmodule {
                             this.Eopt = allMatches.get(1);
                             break;
                         case "wExray":
-                            if (allMatches.get(1).contains("W")) {
-                                this.wExray = -1;
-                            } else {
-                                this.wExray = Double.valueOf(allMatches.get(1)).doubleValue();
-                            }
+                            this.wExray = allMatches.get(1);
                             break;
                         case "wEcore":
-                            if (allMatches.get(1).contains("W")) {
-                                this.wEcore = -1;
-                            } else {
-                                this.wEcore = Double.valueOf(allMatches.get(1)).doubleValue();
-                            }
+                            this.wEcore = allMatches.get(1);
                             break;
                         case "K":
-                            if (allMatches.get(1).contains("K")) {
-                                this.K = -1;
-                            } else {
-                                this.K = Double.valueOf(allMatches.get(1)).doubleValue();
-                            }
+                            this.K = allMatches.get(1);
                             break;
                         case "Delta1":
                             this.Delta1 = Double.valueOf(allMatches.get(1)).doubleValue();
@@ -158,7 +146,7 @@ public class MoRmodule {
                             this.MINIMA_SEARCH_METHOD = Integer.parseInt(allMatches.get(1));
                             break;
                         case "SAVE_BEST_RESULT":
-                            this.SAVE_BEST_RESULT = allMatches.get(1);
+                            this.SAVE_BEST_RESULT = "";
                             break;
                         case "PRINT_FRAGMENT":
                             this.PRINT_FRAGMENT = Integer.parseInt(allMatches.get(1));
@@ -677,7 +665,7 @@ public class MoRmodule {
 
 
         System.out.println("Running...\n");
-        if ((new File(this.resultFileName)).exists() && this.MORSETTINGS.SAVE_BEST_RESULT.contains("Y")) {
+        if ((new File(this.resultFileName)).exists() && (this.MORSETTINGS.SAVE_BEST_RESULT != null)) {
             try {
                 System.out.print("Fragment data loading...");
                 FragmentData FRAG_LOAD = (FragmentData) recallObject(this.resultFileName);
@@ -740,7 +728,7 @@ public class MoRmodule {
                 FRAG = (FragmentData) deepClone(FRAG_I);
                 FRAG.printFrags();
                 E.printInfo();
-                if (!this.resultFileName.equals("") && this.MORSETTINGS.SAVE_BEST_RESULT.contains("Y")) try {
+                if (!this.resultFileName.equals("") && (this.MORSETTINGS.SAVE_BEST_RESULT != null)) try {
                     saveObject(FRAG, this.resultFileName);
                 } catch (IOException e) {
                 }
@@ -750,28 +738,28 @@ public class MoRmodule {
             minEcore = (minEcore == 0) ? E.Ecore : Math.min(E.Ecore, minEcore);
             minE = (minE == 0) ? E.E : Math.min(E.E, minE);
 
-            if ((MORSETTINGS.wExray == -1) || (MORSETTINGS.wEcore == -1)) {
+            if ((MORSETTINGS.wExray != null) || (MORSETTINGS.wEcore != null)) {
                 double[] ModsGparts = findModsGEparts(FRAG_I, E);
                 statModGsqExray.add(ModsGparts[0]);
                 statModGsqErest.add(ModsGparts[1]);
                 statModGsqEcore.add(ModsGparts[2]);
                 statModGsqEpenalty.add(ModsGparts[3]);
             }
-            if (MORSETTINGS.wExray == -1) {
-                E.improvewExray(calcW(statModGsqExray, statModGsqErest, MORSETTINGS.wExray));
+            if (MORSETTINGS.wExray != null) {
+                E.improvewExray(Double.valueOf(MORSETTINGS.wExray));
             } else {
-                E.improvewExray(MORSETTINGS.wExray);
+                E.improvewExray(calcW(statModGsqExray, statModGsqErest, E.getwExray()));
             }
-            if (MORSETTINGS.wEcore == -1) {
-                E.improvewEcore(calcW(statModGsqEcore, statModGsqEpenalty, MORSETTINGS.wEcore));
+            if (MORSETTINGS.wEcore != null) {
+                E.improvewEcore(Double.valueOf(MORSETTINGS.wEcore));
             } else {
-                E.improvewEcore(MORSETTINGS.wEcore);
+                E.improvewEcore(calcW(statModGsqEcore, statModGsqEpenalty, E.getwEcore()));
             }
 
-            if (MORSETTINGS.K == -1) {
-                E.improveK(FRAG_I);
+            if (MORSETTINGS.K != null) {
+                E.improveK(Double.valueOf(MORSETTINGS.K));
             } else {
-                E.improveK(MORSETTINGS.K);
+                E.improveK(FRAG_I);
             }
 
             rho = findRho(FRAG_II, FRAG_I);

@@ -40,7 +40,7 @@ public class SAmodule {
 
         public TemperatureData(String temperatureDataFilename) {
             this.temperatureDataFilename = temperatureDataFilename;
-            List<String> input = ObjectsUtilities.getContentFromFile(this.temperatureDataFilename);
+            List<String> input = ObjectsUtilities.getContentFromFile(this.temperatureDataFilename, "TEMPERATURE_REGIME");
             for (String s : input) {
                 try {
                     Pattern p = Pattern.compile("(\\S+)");
@@ -92,16 +92,16 @@ public class SAmodule {
         private int FIRST_RANDOMIZATION = 0;
         private double MAX_PARAMETERS_STEP = 0;
         private int PRINT_FRAGMENT = 0;
-        private String SAVE_BEST_RESULT = "N";
+        private String SAVE_BEST_RESULT;
         private double c3 = 1E-3;
-        private double wExray_INI = 1.0;
-        private double wEcore_INI = 1.0;
-        private double K_INI = 1.0;
+        private String wExray_INI;
+        private String wEcore_INI;
+        private String K_INI;
 
 
         public AnnealingSettings(String annealingSettingsFilename) {
             this.annealingSettingsFilename = annealingSettingsFilename;
-            List<String> input = ObjectsUtilities.getContentFromFile(this.annealingSettingsFilename);
+            List<String> input = ObjectsUtilities.getContentFromFile(this.annealingSettingsFilename, "SIMULATED_ANNEALING_SETTINGS");
             for (String s : input) {
                 try {
                     if (!s.isEmpty()) {
@@ -132,13 +132,13 @@ public class SAmodule {
                                 this.c3 = Double.valueOf(allMatches.get(1)).doubleValue();
                                 break;
                             case "wExray_INI":
-                                this.wExray_INI = Double.valueOf(allMatches.get(1)).doubleValue();
+                                this.wExray_INI = allMatches.get(1);
                                 break;
                             case "wEcore_INI":
-                                this.wEcore_INI = Double.valueOf(allMatches.get(1)).doubleValue();
+                                this.wEcore_INI = allMatches.get(1);
                                 break;
                             case "K_INI":
-                                this.K_INI = Double.valueOf(allMatches.get(1)).doubleValue();
+                                this.K_INI = allMatches.get(1);
                                 break;
                             default:
                                 break;
@@ -157,13 +157,12 @@ public class SAmodule {
                     DiffractionData HKL,
                     Energy E,
                     String annealingSettingsFilename,
-                    String temperatureDataFilename,
                     String tempFileName,
                     String resultFileName) {
         this.CELL = CELL;
         this.FRAG = FRAG;
         this.HKL = HKL;
-        this.TEMPREGIME = new TemperatureData(temperatureDataFilename);
+        this.TEMPREGIME = new TemperatureData(annealingSettingsFilename);
         this.SASETTINGS = new AnnealingSettings(annealingSettingsFilename);
         this.tempFileName = tempFileName;
         this.resultFileName = resultFileName;
@@ -359,8 +358,8 @@ public class SAmodule {
         StringBuilder strSTATUS = new StringBuilder("");
         StringBuilder strIND = new StringBuilder("");
         double P = 0;
-        double wExray = this.SASETTINGS.wExray_INI;
-        double wEcore = this.SASETTINGS.wEcore_INI;
+        double wExray = 0.0;
+        double wEcore = 0.0;
         double BOLTZMANN = 1.38064E-23;
         double kB = BOLTZMANN;
         int iterationNumber = 0;
@@ -413,7 +412,7 @@ public class SAmodule {
             System.exit(0);
         }
 
-        if ((new File(this.resultFileName)).exists() && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
+        if ((new File(this.resultFileName)).exists() && (this.SASETTINGS.SAVE_BEST_RESULT != null)) {
             try {
                 System.out.print("Fragment data loading...");
                 FragmentData FRAG_LOAD = (FragmentData) recallObject(this.resultFileName);
@@ -436,9 +435,9 @@ public class SAmodule {
 
         if (this.SASETTINGS.PRINT_FRAGMENT != 0) printTempInfo(FRAG_I, E, 0, "");
 
-        E.improvewExray(wExray);
-        E.improvewEcore(wEcore);
-        E.improveK(SASETTINGS.K_INI);
+        if(SASETTINGS.wExray_INI != null) E.improvewExray(Double.valueOf(SASETTINGS.wExray_INI));
+        if(SASETTINGS.wEcore_INI != null) E.improvewEcore(Double.valueOf(SASETTINGS.wEcore_INI));
+        if(SASETTINGS.K_INI != null) E.improveK(Double.valueOf(SASETTINGS.K_INI));
 
         while (iterCYCLE.hasNext()) {
             TemperatureItem itemTemperatureItem = iterCYCLE.next();
@@ -471,7 +470,7 @@ public class SAmodule {
             FRAG.printFrags();
             E.printInfo();
 
-            if (!this.resultFileName.equals("") && this.SASETTINGS.SAVE_BEST_RESULT.contains("Y")) {
+            if (!this.resultFileName.equals("") && (this.SASETTINGS.SAVE_BEST_RESULT != null)) {
                 try {
                     saveObject(FRAG, this.resultFileName);
                 } catch (IOException e) {

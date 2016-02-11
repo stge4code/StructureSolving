@@ -1,6 +1,7 @@
 package CrystTools;
 
 import MathTools.ComplexNumber;
+import MathTools.FastMath;
 
 /**
  * Created by Developer on 10.09.2015.
@@ -39,6 +40,38 @@ public class ReciprocalItem {
         this.Fo.setNum(other.Fo);
         updateFoModule(other.I);
     }
+
+    public ReciprocalItem modify(String hcond, String kcond, String lcond) {
+        ReciprocalItem result = new ReciprocalItem(this);
+        result.h = (int) FastMath.eval(hcond
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+        result.k = (int) FastMath.eval(kcond
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+        result.l = (int) FastMath.eval(lcond
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+        return result;
+    }
+
+    public ReciprocalItem modify(int hmodified, int kmodified, int lmodified) {
+        ReciprocalItem result = new ReciprocalItem(this);
+        result.h = hmodified;
+        result.k = kmodified;
+        result.l = lmodified;
+        return result;
+    }
+
+    public static boolean compare(ReciprocalItem itemi, ReciprocalItem itemj) {
+        return ((itemi.h == itemj.h) && (itemi.k == itemj.k) && (itemi.l == itemj.l));
+    }
+
+
+
 
     private void updateFoModule(double i) {
         if (i >= 0) this.Fo.setModule(Math.sqrt(i));

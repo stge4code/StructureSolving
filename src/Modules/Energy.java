@@ -44,7 +44,7 @@ public class Energy {
 
         private String energySettingsFilename;
         private int WEIGHT_SCHEME = 0;
-        private String ATOMS_PAIR_GENERATOR = "";
+        private String PAIR_GENERATOR;
         private double A2 = 1.0;
         private double B2 = 1.0;
         private double K2 = 1.0;
@@ -53,7 +53,7 @@ public class Energy {
 
         public EnergySettings(String energyDataFilename) {
             this.energySettingsFilename = energyDataFilename;
-            List<String> input = ObjectsUtilities.getContentFromFile(this.energySettingsFilename);
+            List<String> input = ObjectsUtilities.getContentFromFile(this.energySettingsFilename, "ENERGY_SETTINGS");
             for (String s : input) {
                 try {
                     Pattern p = Pattern.compile("(\\S+)");
@@ -79,8 +79,8 @@ public class Energy {
                         case "K2":
                             this.K2 = Double.valueOf(allMatches.get(1)).doubleValue();
                             break;
-                        case "ATOMS_PAIR_GENERATOR":
-                            this.ATOMS_PAIR_GENERATOR = (allMatches.size() > 1) ? allMatches.get(1) : "";
+                        case "PAIR_GENERATOR":
+                            this.PAIR_GENERATOR = allMatches.get(1);
                             break;
                         default:
                             break;
@@ -94,17 +94,17 @@ public class Energy {
     }
 
 
-    public class aPair {
+    public class Pair {
         public double Xi = 0;
         public double Yi = 0;
         public double Zi = 0;
         public double Xj = 0;
         public double Yj = 0;
         public double Zj = 0;
-        public double DVdW = 0;
         public double R = 0;
+        public double Rconstraint = 0;
 
-        public aPair(double xi, double yi, double zi, double xj, double yj, double zj, double R, double DVdW) {
+        public Pair(double xi, double yi, double zi, double xj, double yj, double zj, double R, double Rconstraint) {
             Xi = xi;
             Yi = yi;
             Zi = zi;
@@ -112,7 +112,7 @@ public class Energy {
             Yj = yj;
             Zj = zj;
             this.R = R;
-            this.DVdW = DVdW;
+            this.Rconstraint = Rconstraint;
         }
     }
 
@@ -163,29 +163,46 @@ public class Energy {
     }
 
     public double restrainFunction1(FragmentData FRAG) {
-        List<aPair> aPairs = genAtomsPairs(this.SYM, FRAG);
+        List<Pair> Pairs = genAtomsPairs(this.SYM, FRAG);
         double restrain = 0;
 //        double c = 1;
 //        double n = 2;
 //        double m = 2;
 //              if ((R != 0) && (R < itemApair.RVdW))
 //                  partErest += Math.pow(Math.pow(c * RVdW, n) - Math.pow(R, n), m);
-        for (aPair itemApair : aPairs) {
-            if ((itemApair.R != 0) && (itemApair.R < itemApair.DVdW)) {
-                restrain += Math.pow(Math.min(itemApair.R - itemApair.DVdW, 0), 2);
+        for (Pair itempair : Pairs) {
+            if ((itempair.R != 0) && (itempair.R < itempair.Rconstraint)) {
+                restrain += Math.pow(Math.min(itempair.R - itempair.Rconstraint, 0), 2);
             }
         }
         return restrain;
     }
 
 
-    public List<aPair> genAtomsPairs(Symmetry SYM, FragmentData FRAG) {
-        List<aPair> result = new ArrayList<aPair>();
+    public double restrainFunction2(FragmentData FRAG) {
+        List<Pair> Pairs = genFragmentsPairs(this.SYM, FRAG);
+        double restrain = 0;
+//        double c = 1;
+//        double n = 2;
+//        double m = 2;
+//              if ((R != 0) && (R < itemApair.RVdW))
+//                  partErest += Math.pow(Math.pow(c * RVdW, n) - Math.pow(R, n), m);
+        for (Pair itempair : Pairs) {
+            if ((itempair.R != 0) && (itempair.R < itempair.Rconstraint)) {
+                restrain += Math.pow(Math.min(itempair.R - itempair.Rconstraint, 0), 2);
+            }
+        }
+        return restrain;
+    }
+
+
+    public List<Pair> genAtomsPairs(Symmetry SYM, FragmentData FRAG) {
+        List<Pair> result = new ArrayList<>();
         for (Fragment imFragment_i : FRAG.getFragMass()) {
             for (Fragment imFragment_j : FRAG.getFragMass()) {
                 for (Atom imAtom_i : imFragment_i.getFragAtoms()) {
                     for (Atom imAtom_j : imFragment_j.getFragAtoms()) {
-                        double DVdW = (imAtom_i.getAtomRVdW() + imAtom_j.getAtomRVdW());
+                        double Rconstraint = (imAtom_i.getAtomRVdW() + imAtom_j.getAtomRVdW());
                         for (SymmetryItem imSYM_i : SYM.getSymMass()) {
                             double[] VECT_i =
                                     FastMath.VpV(imSYM_i.getSymT(),
@@ -204,39 +221,39 @@ public class Energy {
                                                                 imAtom_j.getAtomY(),
                                                                 imAtom_j.getAtomZ()
                                                         }));
-                                if (this.ENERGYSETTINGS.ATOMS_PAIR_GENERATOR.contains("T")) {
+                                if ((this.ENERGYSETTINGS.PAIR_GENERATOR != null) && this.ENERGYSETTINGS.PAIR_GENERATOR.contains("T")) {
                                     double[] VECT_it = VECT_i;
                                     for (int tX = -1; tX < 2; tX++) {
                                         for (int tY = -1; tY < 2; tY++) {
                                             for (int tZ = -1; tZ < 2; tZ++) {
                                                 double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
-                                                if (ifInCell(
+                                                /*if (ifInCell(
                                                         (VECT_jt[0] + VECT_it[0]) / 2.0,
                                                         (VECT_jt[1] + VECT_it[1]) / 2.0,
-                                                        (VECT_jt[2] + VECT_it[2]) / 2.0)) {
+                                                        (VECT_jt[2] + VECT_it[2]) / 2.0)) */{
                                                     double R = this.CELL.calcDistance(
                                                             VECT_it[0] - VECT_jt[0],
                                                             VECT_it[1] - VECT_jt[1],
                                                             VECT_it[2] - VECT_jt[2]);
-                                                    result.add(new aPair(
+                                                    result.add(new Pair(
                                                             VECT_it[0], VECT_it[1], VECT_it[2],
-                                                            VECT_jt[0], VECT_jt[1], VECT_jt[2], R, DVdW));
+                                                            VECT_jt[0], VECT_jt[1], VECT_jt[2], R, Rconstraint));
                                                 }
                                             }
                                         }
                                     }
                                 } else {
-                                    if (ifInCell(
+                                    /*if (ifInCell(
                                             (VECT_j[0] + VECT_i[0]) / 2.0,
                                             (VECT_j[1] + VECT_i[1]) / 2.0,
-                                            (VECT_j[2] + VECT_i[2]) / 2.0)) {
+                                            (VECT_j[2] + VECT_i[2]) / 2.0))*/ {
                                         double R = this.CELL.calcDistance(
                                                 VECT_i[0] - VECT_j[0],
                                                 VECT_i[1] - VECT_j[1],
                                                 VECT_i[2] - VECT_j[2]);
-                                        result.add(new aPair(
+                                        result.add(new Pair(
                                                 VECT_i[0], VECT_i[1], VECT_i[2],
-                                                VECT_j[0], VECT_j[1], VECT_j[2], R, DVdW));
+                                                VECT_j[0], VECT_j[1], VECT_j[2], R, Rconstraint));
                                     }
                                 }
                             }
@@ -248,6 +265,73 @@ public class Energy {
 
         return result;
     }
+
+
+    public List<Pair> genFragmentsPairs(Symmetry SYM, FragmentData FRAG) {
+        List<Pair> result = new ArrayList<>();
+        for (Fragment imFragment_i : FRAG.getFragMass()) {
+            for (Fragment imFragment_j : FRAG.getFragMass()) {
+                double Rconstraint = (imFragment_i.getFragDiameter() + imFragment_j.getFragDiameter()) / 2.0;
+                for (SymmetryItem imSYM_i : SYM.getSymMass()) {
+                    double[] VECT_i =
+                            FastMath.VpV(imSYM_i.getSymT(),
+                                    FastMath.MmV(imSYM_i.getSymR(),
+                                            new double[]{
+                                                    imFragment_i.getFragX(),
+                                                    imFragment_i.getFragY(),
+                                                    imFragment_i.getFragZ()
+                                            }));
+                    for (SymmetryItem imSYM_j : SYM.getSymMass()) {
+                        double[] VECT_j =
+                                FastMath.VpV(imSYM_j.getSymT(),
+                                        FastMath.MmV(imSYM_j.getSymR(),
+                                                new double[]{
+                                                        imFragment_j.getFragX(),
+                                                        imFragment_j.getFragY(),
+                                                        imFragment_j.getFragZ()
+                                                }));
+                        if ((this.ENERGYSETTINGS.PAIR_GENERATOR != null) && this.ENERGYSETTINGS.PAIR_GENERATOR.contains("T")) {
+                            double[] VECT_it = VECT_i;
+                            for (int tX = -1; tX < 2; tX++) {
+                                for (int tY = -1; tY < 2; tY++) {
+                                    for (int tZ = -1; tZ < 2; tZ++) {
+                                        double[] VECT_jt = FastMath.VpV(VECT_j, new double[]{tX, tY, tZ});
+                                        /*if (ifInCell(
+                                                (VECT_jt[0] + VECT_it[0]) / 2.0,
+                                                (VECT_jt[1] + VECT_it[1]) / 2.0,
+                                                (VECT_jt[2] + VECT_it[2]) / 2.0))*/ {
+                                            double R = this.CELL.calcDistance(
+                                                    VECT_it[0] - VECT_jt[0],
+                                                    VECT_it[1] - VECT_jt[1],
+                                                    VECT_it[2] - VECT_jt[2]);
+                                            result.add(new Pair(
+                                                    VECT_it[0], VECT_it[1], VECT_it[2],
+                                                    VECT_jt[0], VECT_jt[1], VECT_jt[2], R, Rconstraint));
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            /*if (ifInCell(
+                                    (VECT_j[0] + VECT_i[0]) / 2.0,
+                                    (VECT_j[1] + VECT_i[1]) / 2.0,
+                                    (VECT_j[2] + VECT_i[2]) / 2.0))*/ {
+                                double R = this.CELL.calcDistance(
+                                        VECT_i[0] - VECT_j[0],
+                                        VECT_i[1] - VECT_j[1],
+                                        VECT_i[2] - VECT_j[2]);
+                                result.add(new Pair(
+                                        VECT_i[0], VECT_i[1], VECT_i[2],
+                                        VECT_j[0], VECT_j[1], VECT_j[2], R, Rconstraint));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
 
     public double calcwHKL(ReciprocalItem itemHKL) {
         double wHKL = 1.0;
@@ -272,7 +356,7 @@ public class Energy {
             case 4:
                 double A4 = this.ENERGYSETTINGS.A4;
                 double B4 = this.ENERGYSETTINGS.B4;
-                if(!Double.isNaN(itemHKL.Fc.getModule())) {
+                if (!Double.isNaN(itemHKL.Fc.getModule())) {
                     double P = (2.0 * Math.pow(itemHKL.Fc.getModule(), 2) +
                             Math.max(Math.pow(itemHKL.Fo.getModule(), 2), 0.0)) / 3.0;
                     wHKL = 1.0 / (Math.pow(itemHKL.sigmaI, 2) + Math.pow(A4 * P, 2) + B4 * P);
@@ -470,6 +554,11 @@ public class Energy {
         if (this.OPT.contains("Re1")) {
             partErest += restrainFunction1(FRAG);
         }
+
+        if (this.OPT.contains("Re2")) {
+            partErest += restrainFunction2(FRAG);
+        }
+
         this.Erest = partErest;
         this.Epenalty = this.PSI.Psi1(FRAG);
         this.Ecore = this.wExray * this.Exray + this.Erest;

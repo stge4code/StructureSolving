@@ -70,10 +70,17 @@ public class ObjectsUtilities {
                     + String.valueOf(charSet.charAt(num / 10))
                     + String.valueOf(charSet.charAt(num % 10));
         } else {
-            return name
-                    + String.valueOf(num / 100)
-                    + String.valueOf(charSet.charAt(num / charSet.length()))
-                    + String.valueOf(charSet.charAt(num % charSet.length()));
+            //List<Integer> nTor = FastMath.integerToRanks(num);
+            if (name.length() < 2) {
+                return name
+                        + String.valueOf(num / 100)
+                        + String.valueOf(charSet.charAt(num / charSet.length()))
+                        + String.valueOf(charSet.charAt(num % charSet.length()));
+            } else {
+                return name
+                        + String.valueOf((num % 100))
+                        + String.valueOf(charSet.charAt(num % charSet.length()));
+            }
         }
     }
     public static <T> void with(T obj, Consumer<T> c) {
@@ -98,6 +105,34 @@ public class ObjectsUtilities {
         }
         return result;
     }
+
+    public static List<String> getContentFromFile(String fileName, String marker){
+        List<String> result = new ArrayList<>();
+        File file = new File(fileName);
+        try {
+            BufferedReader in = new BufferedReader(new FileReader(file.getAbsoluteFile()));
+            try {
+                String s;
+                boolean condition = false;
+                while ((s = in.readLine()) != null) {
+                    if(s.equals(marker + "{")) {
+                        condition = true;
+                        continue;
+                    }
+                    if(condition && s.contains("}")) condition = false;
+                    if(condition) {
+                        if (!s.isEmpty()) result.add(s);
+                    }
+                }
+            } finally {
+                in.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return result;
+    }
+
     public static void putContentToFile(String fileName, List<String> output){
         putContentToFile(fileName, output, false);
     }
