@@ -340,7 +340,7 @@ public class Fragment implements Serializable {
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
             for (SymmetryItem itemSYM : SYM.getSymMass()) {
                 double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
-                argPhase = 2 * Math.PI * (VECT[0] * HKL.h + VECT[1] * HKL.k + VECT[2] * HKL.l);
+                argPhase = 2 * Math.PI * (VECT[0] * (HKL.h + HKL.qh) + VECT[1] * (HKL.k + HKL.qk) + VECT[2] * (HKL.l + HKL.ql));
                 Fhkl[0] += Math.cos(argPhase);
                 if (SYM.getLATT() < 0) {
                     Fhkl[1] += Math.sin(argPhase);
@@ -356,7 +356,7 @@ public class Fragment implements Serializable {
             double[] VECTCORD = {this.fragX, this.fragY, this.fragZ};
             for (SymmetryItem itemSYM : SYM.getSymMass()) {
                 double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
-                argPhase = 2 * Math.PI * (VECT[0] * HKL.h + VECT[1] * HKL.k + VECT[2] * HKL.l);
+                argPhase = 2 * Math.PI * (VECT[0] * (HKL.h + HKL.qh) + VECT[1] * (HKL.k + HKL.qk) + VECT[2] * (HKL.l + HKL.ql));
                 Fhkl[0] += Math.cos(argPhase);
                 if (SYM.getLATT() < 0) {
                     Fhkl[1] += Math.sin(argPhase);
@@ -373,7 +373,7 @@ public class Fragment implements Serializable {
                 double[] VECTCORD = {itemAtom.getAtomX(), itemAtom.getAtomY(), itemAtom.getAtomZ()};
                 for (SymmetryItem itemSYM : SYM.getSymMass()) {
                     double[] VECT = FastMath.VpV(itemSYM.getSymT(), FastMath.MmV(itemSYM.getSymR(), VECTCORD));
-                    argPhase = 2 * Math.PI * (VECT[0] * HKL.h + VECT[1] * HKL.k + VECT[2] * HKL.l);
+                    argPhase = 2 * Math.PI * (VECT[0] * (HKL.h + HKL.qh) + VECT[1] * (HKL.k + HKL.qk) + VECT[2] * (HKL.l + HKL.ql));
                     Fhkl[0] += atomScattering * Math.cos(argPhase);
                     if (SYM.getLATT() < 0) {
                         Fhkl[1] +=  atomScattering * Math.sin(argPhase);

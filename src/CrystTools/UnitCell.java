@@ -311,7 +311,7 @@ public class UnitCell implements Serializable {
         return calcScatVect(hkl.h, hkl.k, hkl.l);
     }
 
-    public double calcScatVect(double h, double k, double l) {
+    public double calcScatVect(int h, int k, int l) {
         /*
         double h = hkl.h;
         double k = hkl.k;
@@ -332,6 +332,11 @@ public class UnitCell implements Serializable {
                 2 * (S[0][1] * h * k + S[1][2] * k * l + S[0][2] * h * l)) / this.V;
         */
 
+        double[] Vhkl = {h, k, l};
+        return Math.sqrt(FastMath.VmV(Vhkl, FastMath.MmV(this.Gstar, Vhkl))) / 2.0;
+    }
+
+    public double calcScatVect(double h, double k, double l) {
         double[] Vhkl = {h, k, l};
         return Math.sqrt(FastMath.VmV(Vhkl, FastMath.MmV(this.Gstar, Vhkl))) / 2.0;
     }

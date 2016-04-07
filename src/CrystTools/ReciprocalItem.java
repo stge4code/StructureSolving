@@ -7,9 +7,12 @@ import MathTools.FastMath;
  * Created by Developer on 10.09.2015.
  */
 public class ReciprocalItem {
-    public double h;
-    public double k;
-    public double l;
+    public int h;
+    public int k;
+    public int l;
+    public double qh;
+    public double qk;
+    public double ql;
     public double I;
     public double sigmaI;
     public double batchNumber;
@@ -17,7 +20,7 @@ public class ReciprocalItem {
     public ComplexNumber Fo = new ComplexNumber();
     public ComplexNumber Fc = new ComplexNumber();
 
-    public ReciprocalItem(double h, double k, double l, double i, double sigmai, double scatvect, double batchnumber) {
+    public ReciprocalItem(int h, int k, int l, double i, double sigmai, double scatvect, double batchnumber, double qh, double qk, double ql) {
         this.h = h;
         this.k = k;
         this.l = l;
@@ -26,12 +29,18 @@ public class ReciprocalItem {
         this.scatvect = scatvect;
         this.batchNumber = batchnumber;
         updateFoModule(i);
+        this.qh = qh;
+        this.qk = qk;
+        this.ql = ql;
     }
 
     public ReciprocalItem(ReciprocalItem other) {
         this.h = other.h;
         this.k = other.k;
         this.l = other.l;
+        this.qh = other.qh;
+        this.qk = other.qk;
+        this.ql = other.ql;
         this.I = other.I;
         this.sigmaI = other.sigmaI;
         this.scatvect = other.scatvect;
@@ -44,21 +53,21 @@ public class ReciprocalItem {
     public ReciprocalItem modify(String hcond, String kcond, String lcond) {
         ReciprocalItem result = new ReciprocalItem(this);
         result.h = (int) FastMath.eval(hcond
-                .replaceAll("h", "(" + Double.toString(this.h) + ")")
-                .replaceAll("k", "(" + Double.toString(this.k) + ")")
-                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
         result.k = (int) FastMath.eval(kcond
-                .replaceAll("h", "(" + Double.toString(this.h) + ")")
-                .replaceAll("k", "(" + Double.toString(this.k) + ")")
-                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
         result.l = (int) FastMath.eval(lcond
-                .replaceAll("h", "(" + Double.toString(this.h) + ")")
-                .replaceAll("k", "(" + Double.toString(this.k) + ")")
-                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
+                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
+                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
         return result;
     }
 
-    public ReciprocalItem modify(double hmodified, double kmodified, double lmodified) {
+    public ReciprocalItem modify(int hmodified, int kmodified, int lmodified) {
         ReciprocalItem result = new ReciprocalItem(this);
         result.h = hmodified;
         result.k = kmodified;
@@ -67,7 +76,12 @@ public class ReciprocalItem {
     }
 
     public static boolean compare(ReciprocalItem itemi, ReciprocalItem itemj) {
-        return ((itemi.h == itemj.h) && (itemi.k == itemj.k) && (itemi.l == itemj.l));
+        return ((itemi.h == itemj.h) &&
+                (itemi.k == itemj.k) &&
+                (itemi.l == itemj.l) &&
+                (itemi.qh == itemj.qh) &&
+                (itemi.qk == itemj.qk) &&
+                (itemi.ql == itemj.ql));
     }
 
 

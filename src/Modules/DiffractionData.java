@@ -159,19 +159,69 @@ public class DiffractionData {
         List<String> input = ObjectsUtilities.getContentFromFile(diffDataFilename);
         for (String s : input) {
             try {
-                Matcher m = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.*)$").matcher(s);
-                if (m.find()) {
-                    if (m.group(4) != null) {
-                        int h = (int) Double.valueOf(m.group(1)).doubleValue();
-                        int k = (int) Double.valueOf(m.group(2)).doubleValue();
-                        int l = (int) Double.valueOf(m.group(3)).doubleValue();
+                //Matcher m = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.*)$").matcher(s);
+                Matcher m1 = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.{4})(.{8})(.{8})(.{8})$").matcher(s);
+                Matcher m2 = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.{4})$").matcher(s);
+                Matcher m3 = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})$").matcher(s);
+                Matcher m4 = Pattern.compile("^(.{4})(.{4})(.{4})(.{8})(.{8})(.{8})(.{8})(.{8})$").matcher(s);
+                if (m1.find()) {
+                           int h = (int) Double.valueOf(m1.group(1)).doubleValue();
+                        int k = (int) Double.valueOf(m1.group(2)).doubleValue();
+                        int l = (int) Double.valueOf(m1.group(3)).doubleValue();
                         if ((h != 0) && (k != 0) && (l != 0)) {
-                            double I = Double.valueOf(m.group(4)).doubleValue();
-                            double sigmaI = Double.valueOf(m.group(5)).doubleValue();
-                            double batchNumber = (!m.group(6).isEmpty()) ? Double.valueOf(m.group(6)).doubleValue() : 1.0;
-                            double scatvect = CELL.calcScatVect(h, k, l);
-                            this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber));
+                            double I = Double.valueOf(m1.group(4)).doubleValue();
+                            double sigmaI = Double.valueOf(m1.group(5)).doubleValue();
+                            double batchNumber = (!m1.group(6).isEmpty()) ? Double.valueOf(m1.group(6)).doubleValue() : 1.0;
+                            double qh = (!m1.group(7).isEmpty()) ? Double.valueOf(m1.group(7)).doubleValue() : 0.0;
+                            double qk = (!m1.group(8).isEmpty()) ? Double.valueOf(m1.group(8)).doubleValue() : 0.0;
+                            double ql = (!m1.group(9).isEmpty()) ? Double.valueOf(m1.group(9)).doubleValue() : 0.0;
+                            double scatvect = CELL.calcScatVect(h + qh, k + qk, l + ql);
+                            this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber, qh, qk, ql));
                         }
+                }
+                if (m2.find()) {
+                    int h = (int) Double.valueOf(m2.group(1)).doubleValue();
+                    int k = (int) Double.valueOf(m2.group(2)).doubleValue();
+                    int l = (int) Double.valueOf(m2.group(3)).doubleValue();
+                    if ((h != 0) && (k != 0) && (l != 0)) {
+                        double I = Double.valueOf(m2.group(4)).doubleValue();
+                        double sigmaI = Double.valueOf(m2.group(5)).doubleValue();
+                        double batchNumber = (!m2.group(6).isEmpty()) ? Double.valueOf(m2.group(6)).doubleValue() : 1.0;
+                        double qh = 0.0;
+                        double qk = 0.0;
+                        double ql = 0.0;
+                        double scatvect = CELL.calcScatVect(h + qh, k + qk, l + ql);
+                        this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber, qh, qk, ql));
+                    }
+                }
+                if (m3.find()) {
+                    int h = (int) Double.valueOf(m3.group(1)).doubleValue();
+                    int k = (int) Double.valueOf(m3.group(2)).doubleValue();
+                    int l = (int) Double.valueOf(m3.group(3)).doubleValue();
+                    if ((h != 0) && (k != 0) && (l != 0)) {
+                        double I = Double.valueOf(m3.group(4)).doubleValue();
+                        double sigmaI = Double.valueOf(m3.group(5)).doubleValue();
+                        double batchNumber = 1.0;
+                        double qh = 0.0;
+                        double qk = 0.0;
+                        double ql = 0.0;
+                        double scatvect = CELL.calcScatVect(h + qh, k + qk, l + ql);
+                        this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber, qh, qk, ql));
+                    }
+                }
+                if (m4.find()) {
+                    int h = (int) Double.valueOf(m4.group(1)).doubleValue();
+                    int k = (int) Double.valueOf(m4.group(2)).doubleValue();
+                    int l = (int) Double.valueOf(m4.group(3)).doubleValue();
+                    if ((h != 0) && (k != 0) && (l != 0)) {
+                        double I = Double.valueOf(m4.group(4)).doubleValue();
+                        double sigmaI = Double.valueOf(m4.group(5)).doubleValue();
+                        double batchNumber = 1.0;
+                        double qh = (!m4.group(6).isEmpty()) ? Double.valueOf(m4.group(7)).doubleValue() : 0.0;
+                        double qk = (!m4.group(7).isEmpty()) ? Double.valueOf(m4.group(8)).doubleValue() : 0.0;
+                        double ql = (!m4.group(8).isEmpty()) ? Double.valueOf(m4.group(9)).doubleValue() : 0.0;
+                        double scatvect = CELL.calcScatVect(h + qh, k + qk, l + ql);
+                        this.HKL.add(new ReciprocalItem(h, k, l, I, sigmaI, scatvect, batchNumber, qh, qk, ql));
                     }
                 }
             } catch (NumberFormatException e) {
@@ -449,9 +499,9 @@ public class DiffractionData {
 
     private boolean laueCondition(ReciprocalItem itemHKLi, ReciprocalItem itemHKLj, Laue laue) {
         boolean result = false;
-        double h = itemHKLi.h;
-        double k = itemHKLi.k;
-        double l = itemHKLi.l;
+        int h = itemHKLi.h;
+        int k = itemHKLi.k;
+        int l = itemHKLi.l;
 
         if (laue.equals(Laue.Lm1)) {
             result = result | FastMath.AnyEquals(itemHKLj,
@@ -597,14 +647,14 @@ public class DiffractionData {
             }
             for (String S : DIFDATASETTINGS.SORT_H.l) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h > 0);
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h > 0);
                 if (!condition) return false;
             }
             for (String S : DIFDATASETTINGS.SORT_H.le) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h >= 0);
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h >= 0);
                 if (!condition) return false;
             }
 
@@ -614,15 +664,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")
-                                .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                                .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h == 0);
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
                 } else {
                     condition = condition & (FastMath.eval((S)
-                            .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                            .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h == 0);
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                     if (!condition) return false;
                 }
             }
@@ -633,15 +683,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")
-                                .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                                .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h == 0);
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & !condition_temp;
                 } else {
                     condition = condition & !(FastMath.eval((S)
-                            .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                            .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h == 0);
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h == 0);
                     if (!condition) return false;
                 }
 
@@ -649,30 +699,30 @@ public class DiffractionData {
 
             for (String S : DIFDATASETTINGS.SORT_H.g) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h < 0);
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h < 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_H.ge) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.h <= 0);
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.h <= 0);
                 if (!condition) return false;
             }
 
 
             for (String S : DIFDATASETTINGS.SORT_K.l) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k > 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k > 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_K.le) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k >= 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k >= 0);
                 if (!condition) return false;
             }
 
@@ -683,15 +733,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("H", "(" + Integer.toString(N) + ")")
-                                .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                                .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k == 0);
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
                 } else {
                     condition = condition & (FastMath.eval((S)
-                            .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                            .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k == 0);
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
                     if (!condition) return false;
                 }
             }
@@ -702,15 +752,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")
-                                .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                                .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k == 0);
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & !condition_temp;
                 } else {
                     condition = condition & !(FastMath.eval((S)
-                            .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                            .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k == 0);
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k == 0);
                     if (!condition) return false;
                 }
 
@@ -718,29 +768,29 @@ public class DiffractionData {
 
             for (String S : DIFDATASETTINGS.SORT_K.g) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k < 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k < 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_K.ge) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("L", "(" + Double.toString(HKL.l) + ")")) - HKL.k <= 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("L", "(" + Integer.toString(HKL.l) + ")")) - HKL.k <= 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_L.l) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l > 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l > 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_L.le) {
                 condition = condition & !(FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l >= 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l >= 0);
                 if (!condition) return false;
 
             }
@@ -751,15 +801,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")
-                                .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                                .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l == 0);
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & condition_temp;
                 } else {
                     condition = condition & (FastMath.eval((S)
-                            .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                            .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l == 0);
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                     if (!condition) return false;
                 }
             }
@@ -770,15 +820,15 @@ public class DiffractionData {
                     for (int N = this.DIFDATASETTINGS.N[0]; N < this.DIFDATASETTINGS.N[1] - 1; N++) {
                         condition_temp = condition_temp | (FastMath.eval((S)
                                 .replaceAll("N", "(" + Integer.toString(N) + ")")
-                                .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                                .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l == 0);
+                                .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                                .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                         if (condition_temp) break;
                     }
                     condition = condition & !condition_temp;
                 } else {
                     condition = condition & !(FastMath.eval((S)
-                            .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                            .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l == 0);
+                            .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                            .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l == 0);
                     if (!condition) return false;
                 }
 
@@ -786,15 +836,15 @@ public class DiffractionData {
 
             for (String S : DIFDATASETTINGS.SORT_L.g) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l < 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l < 0);
                 if (!condition) return false;
             }
 
             for (String S : DIFDATASETTINGS.SORT_L.ge) {
                 condition = condition & (FastMath.eval((S)
-                        .replaceAll("H", "(" + Double.toString(HKL.h) + ")")
-                        .replaceAll("K", "(" + Double.toString(HKL.k) + ")")) - HKL.l <= 0);
+                        .replaceAll("H", "(" + Integer.toString(HKL.h) + ")")
+                        .replaceAll("K", "(" + Integer.toString(HKL.k) + ")")) - HKL.l <= 0);
                 if (!condition) return false;
             }
 
@@ -814,7 +864,7 @@ public class DiffractionData {
 
         List<String> output = new ArrayList<>();
         for (ReciprocalItem itemHKL : this.HKL) {
-            output.add(String.format("% 4f% 4f% 4f %8g %8g% 4d",
+            output.add(String.format("% 4d% 4d% 4d %8g %8g% 4d",
                     itemHKL.h,
                     itemHKL.k,
                     itemHKL.l,
