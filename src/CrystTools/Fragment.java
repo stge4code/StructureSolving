@@ -334,7 +334,6 @@ public class Fragment implements Serializable {
         double ScatVect = HKL.scatvect;
         double ScatVectSq = Math.pow(HKL.scatvect, 2);
         double Debye_Coefficient = Math.exp(-8.0 * Math.pow(Math.PI, 2) * this.fragU * ScatVectSq);
-        this.fragDiameter = (this.fragDiameter == 0) ? fragDiameter(CELL) : this.fragDiameter;
         double D = this.fragDiameter;
         if (scatType.contains("F1b")) {
             atomScattering = fragOccupancy * Debye_Coefficient * this.fragAtoms.get(0).atomScattering(ScatVectSq);

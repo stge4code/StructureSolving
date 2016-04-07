@@ -311,7 +311,7 @@ public class UnitCell implements Serializable {
         return calcScatVect(hkl.h, hkl.k, hkl.l);
     }
 
-    public double calcScatVect(int h, int k, int l) {
+    public double calcScatVect(double h, double k, double l) {
         /*
         double h = hkl.h;
         double k = hkl.k;

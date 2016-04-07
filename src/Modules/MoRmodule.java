@@ -621,8 +621,8 @@ public class MoRmodule {
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of fragments: ", FRAG.getFragMass().size()));
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of used reflections: ", HKL.getHKL().size()));
         strOUT.append(String.format("|  %-50s%12d |\n", "Number of parameters: ", this.ParametersList.length));
-        strOUT.append(String.format("|  %-50s%12.2e |\n", "Ravin jumping step: ", this.MORSETTINGS.h));
-        strOUT.append(String.format("|  %-50s%12.2e |\n", "Ravin probe: ", this.MORSETTINGS.Delta));
+        strOUT.append(String.format("|  %-50s%12.2e |\n", "Ravine jumping step: ", this.MORSETTINGS.h));
+        strOUT.append(String.format("|  %-50s%12.2e |\n", "Ravine probe: ", this.MORSETTINGS.Delta));
         strOUT.append(String.format("|  %-50s%12s |\n", "Energy options: ", this.MORSETTINGS.Eopt));
 
         switch (this.MORSETTINGS.MINIMA_SEARCH_METHOD) {

@@ -7,9 +7,9 @@ import MathTools.FastMath;
  * Created by Developer on 10.09.2015.
  */
 public class ReciprocalItem {
-    public int h;
-    public int k;
-    public int l;
+    public double h;
+    public double k;
+    public double l;
     public double I;
     public double sigmaI;
     public double batchNumber;
@@ -17,7 +17,7 @@ public class ReciprocalItem {
     public ComplexNumber Fo = new ComplexNumber();
     public ComplexNumber Fc = new ComplexNumber();
 
-    public ReciprocalItem(int h, int k, int l, double i, double sigmai, double scatvect, double batchnumber) {
+    public ReciprocalItem(double h, double k, double l, double i, double sigmai, double scatvect, double batchnumber) {
         this.h = h;
         this.k = k;
         this.l = l;
@@ -44,21 +44,21 @@ public class ReciprocalItem {
     public ReciprocalItem modify(String hcond, String kcond, String lcond) {
         ReciprocalItem result = new ReciprocalItem(this);
         result.h = (int) FastMath.eval(hcond
-                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
-                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
-                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Double.toString(this.h) + ")")
+                .replaceAll("k", "(" + Double.toString(this.k) + ")")
+                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
         result.k = (int) FastMath.eval(kcond
-                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
-                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
-                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Double.toString(this.h) + ")")
+                .replaceAll("k", "(" + Double.toString(this.k) + ")")
+                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
         result.l = (int) FastMath.eval(lcond
-                .replaceAll("h", "(" + Integer.toString(this.h) + ")")
-                .replaceAll("k", "(" + Integer.toString(this.k) + ")")
-                .replaceAll("l", "(" + Integer.toString(this.l) + ")"));
+                .replaceAll("h", "(" + Double.toString(this.h) + ")")
+                .replaceAll("k", "(" + Double.toString(this.k) + ")")
+                .replaceAll("l", "(" + Double.toString(this.l) + ")"));
         return result;
     }
 
-    public ReciprocalItem modify(int hmodified, int kmodified, int lmodified) {
+    public ReciprocalItem modify(double hmodified, double kmodified, double lmodified) {
         ReciprocalItem result = new ReciprocalItem(this);
         result.h = hmodified;
         result.k = kmodified;
